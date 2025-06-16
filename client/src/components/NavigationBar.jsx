@@ -20,7 +20,8 @@ const drawerWidth = 240;
 const navItems = [
     {name: 'Home', link: ''},
     {name: 'About', link: '/about'},
-    {name: 'Sign In', link: '/signin'}
+    {name: 'Sign In', link: '/signin'},
+    {name: 'Sign Out', link: '/signout'}
 ];
 
 function NavigationBar(props) {

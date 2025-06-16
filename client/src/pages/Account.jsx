@@ -1,5 +1,3 @@
-// client/src/pages/AccountPage.jsx
-import React from "react";
 import { Typography, Container, Box } from "@mui/material";
 
 export default function AccountPage() {

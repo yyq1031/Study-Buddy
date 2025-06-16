@@ -13,6 +13,12 @@ import {
 } from '@mui/material';
 
 function Classes({ user }) {
+  console.log(user);
+  // get classes of user from backend
+  user.classes = [
+    { id: 1, name: "Math 101", latestLesson: "Derivatives", latestLessonId: "derivatives" },
+    { id: 2, name: "Chemistry", latestLesson: "Acids and Bases", latestLessonId: "acids-bases" }
+  ]
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
