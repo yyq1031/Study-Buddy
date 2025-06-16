@@ -16,6 +16,7 @@
     "@mui/material": "^7.1.1",
     "@mui/x-charts": "^8.5.2",
     "@mui/x-data-grid": "^8.5.2",
+    "face-api.js": "^0.22.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2",

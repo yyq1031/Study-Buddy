@@ -6,6 +6,7 @@ import SignIn from './pages/SignIn';
 import NavigationBar from './components/NavigationBar';
 import Dashboard from './pages/Teacher/Dashboard';
 import TeacherUploadInterface from './pages/Teacher/TeacherUploadInterface';
+import LessonPage from './pages/Lesson';
 
 function App() {
   return(
@@ -17,6 +18,7 @@ function App() {
         <Route path="/signin" element={<SignIn />} />
         <Route path='/dashboard' element={<Dashboard /> }/>
         <Route path='/teacheruploadinterace' element={<TeacherUploadInterface /> }/>
+        <Route path='/lessons' element={<LessonPage /> }/> 
       </Routes>
     </Router>
   )
