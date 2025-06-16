@@ -37,13 +37,6 @@ function Classes({ user }) {
                     {cls.name}
                   </Link>
                 </Typography>
-                <Typography
-                  variant="body2"
-                  color="textSecondary"
-                  sx={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
-                >
-                  Continue: <Link to={`/class/${cls.id}/lesson/${cls.latestLessonId}`} style={{ textDecoration: 'none', color: '#1976d2' }}>{cls.latestLesson}</Link>
-                </Typography>
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="body2">Progress</Typography>
                   <LinearProgress
@@ -54,8 +47,8 @@ function Classes({ user }) {
                 </Box>
               </CardContent>
               <CardActions>
-                <Link to="/quiz" style={{ textDecoration: 'none' }}>
-                  <Button size="small" variant="contained">Go to Quiz</Button>
+                <Link to={`/class/${cls.id}`} style={{ textDecoration: 'none' }}>
+                  <Button size="small" variant="contained">Study</Button>
                 </Link>
               </CardActions>
             </Card>
