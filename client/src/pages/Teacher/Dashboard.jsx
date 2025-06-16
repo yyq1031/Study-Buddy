@@ -48,6 +48,7 @@ import {
   PlayCircleOutlined,
   ArticleOutlined
 } from '@mui/icons-material';
+import { useTheme, useMediaQuery } from '@mui/material';
 
 // Mock data
 const contentTypeData = [
@@ -106,10 +107,12 @@ const connections = {
   ]
 };
 
-export default function TeacherDashboard() {
+export default function Dashboard() {
   const [selectedStudent, setSelectedStudent] = useState('Alex Johnson');
   const [selectedNode, setSelectedNode] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const getMasteryColor = (mastery) => {
     if (mastery >= 70) return '#4caf50'; // Green
@@ -142,9 +145,9 @@ export default function TeacherDashboard() {
       </Typography>
 
       {/* General Analytics Section */}
-      <Grid container spacing={3} sx={{ mb: 6 }}>
+      <Grid container spacing={3} sx={{ mb: 6 }} justifyContent="center">
         {/* Content Type Effectiveness */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={4}>
           <Card elevation={3}>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
@@ -182,7 +185,7 @@ export default function TeacherDashboard() {
         </Grid>
 
         {/* Struggling Topics */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={4}>
           <Card elevation={3}>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
@@ -219,7 +222,7 @@ export default function TeacherDashboard() {
         </Grid>
 
         {/* Students Needing Attention */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={4}>
           <Card elevation={3}>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
@@ -241,7 +244,7 @@ export default function TeacherDashboard() {
                           <Typography variant="caption" color="text.secondary">
                             Overall Score: {student.score}%
                           </Typography>
-                          <Box sx={{ mt: 0.5 }}>
+                          <Box sx={{ mt: 0.5, display: 'flex', flexWrap: 'wrap' }}>
                             {student.struggles.map((struggle, idx) => (
                               <Chip
                                 key={idx}
@@ -271,7 +274,7 @@ export default function TeacherDashboard() {
         <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
           Learning Journey Map
         </Typography>
-        <FormControl sx={{ minWidth: 200, mb: 3 }}>
+        <FormControl fullWidth sx={{ mb: 3, maxWidth: 300 }}>
           <InputLabel>Select Student</InputLabel>
           <Select
             value={selectedStudent}
@@ -292,14 +295,19 @@ export default function TeacherDashboard() {
         <Typography variant="h6" gutterBottom>
           {selectedStudent}'s Learning Path
         </Typography>
-        <Box sx={{ position: 'relative', height: 400, overflow: 'auto' }}>
-          <svg width="800" height="400" style={{ border: '1px solid #e0e0e0', borderRadius: '8px' }}>
-            {/* Draw connections */}
+        <Box sx={{ width: '100%', overflowX: 'auto' }}>
+          <svg
+            viewBox="0 0 800 400"
+            preserveAspectRatio="xMinYMin meet"
+            width="100%"
+            height="auto"
+            style={{ border: '1px solid #e0e0e0', borderRadius: '8px', minWidth: 600 }}
+          >
             {currentConnections.map((conn, index) => {
               const fromNode = currentJourney.find(n => n.id === conn.from);
               const toNode = currentJourney.find(n => n.id === conn.to);
               if (!fromNode || !toNode) return null;
-              
+
               return (
                 <line
                   key={index}
@@ -313,8 +321,7 @@ export default function TeacherDashboard() {
                 />
               );
             })}
-            
-            {/* Arrow marker definition */}
+
             <defs>
               <marker
                 id="arrowhead"
@@ -324,14 +331,10 @@ export default function TeacherDashboard() {
                 refY="3.5"
                 orient="auto"
               >
-                <polygon
-                  points="0 0, 10 3.5, 0 7"
-                  fill="#bdbdbd"
-                />
+                <polygon points="0 0, 10 3.5, 0 7" fill="#bdbdbd" />
               </marker>
             </defs>
 
-            {/* Draw nodes */}
             {currentJourney.map((node) => (
               <g key={node.id}>
                 <circle
@@ -369,8 +372,7 @@ export default function TeacherDashboard() {
             ))}
           </svg>
         </Box>
-        
-        {/* Legend */}
+
         <Box sx={{ mt: 2, display: 'flex', gap: 3, flexWrap: 'wrap' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box sx={{ width: 20, height: 20, borderRadius: '50%', backgroundColor: '#4caf50' }} />
@@ -378,23 +380,21 @@ export default function TeacherDashboard() {
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box sx={{ width: 20, height: 20, borderRadius: '50%', backgroundColor: '#ff9800' }} />
-            <Typography variant="body2">Moderate (50-69%)</Typography>
+            <Typography variant="body2">Moderate (50–69%)</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box sx={{ width: 20, height: 20, borderRadius: '50%', backgroundColor: '#f44336' }} />
-            <Typography variant="body2">Weak (50%)</Typography>
+            <Typography variant="body2">Weak (&lt;50%)</Typography>
           </Box>
         </Box>
       </Paper>
 
       {/* Node Details Dialog */}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth fullScreen={isSmallScreen}>
         {selectedNode && (
           <>
             <DialogTitle>
-              <Typography variant="h6" component="div">
-                {selectedNode.concept} - Detailed Analysis
-              </Typography>
+              <Typography variant="h6">{selectedNode.concept} – Detailed Analysis</Typography>
             </DialogTitle>
             <DialogContent>
               <Grid container spacing={3}>
@@ -422,7 +422,7 @@ export default function TeacherDashboard() {
                     </CardContent>
                   </Card>
                 </Grid>
-                
+
                 <Grid item xs={12} md={6}>
                   <Card variant="outlined">
                     <CardContent>
@@ -436,13 +436,12 @@ export default function TeacherDashboard() {
                         </Typography>
                       </Box>
                       <Typography variant="body2" color="text.secondary">
-                        This student learns this concept best through {selectedNode.bestModality} content.
-                        Consider providing more {selectedNode.bestModality}-based materials for improvement.
+                        This student learns this concept best through {selectedNode.bestModality} content. Consider providing more {selectedNode.bestModality}-based materials for improvement.
                       </Typography>
                     </CardContent>
                   </Card>
                 </Grid>
-                
+
                 <Grid item xs={12}>
                   <Card variant="outlined">
                     <CardContent>
@@ -451,13 +450,11 @@ export default function TeacherDashboard() {
                       </Typography>
                       {selectedNode.mastery < 50 ? (
                         <Typography variant="body2" color="error">
-                          ⚠️ This student needs immediate attention on this topic. Consider scheduling a one-on-one session
-                          or providing additional {selectedNode.bestModality} resources.
+                          ⚠️ This student needs immediate attention on this topic. Consider scheduling a one-on-one session or providing additional {selectedNode.bestModality} resources.
                         </Typography>
                       ) : selectedNode.mastery < 70 ? (
                         <Typography variant="body2" color="warning.main">
-                          📝 Good progress, but there's room for improvement. Provide practice exercises using 
-                          {selectedNode.bestModality} format.
+                          📝 Good progress, but there's room for improvement. Provide practice exercises using {selectedNode.bestModality} format.
                         </Typography>
                       ) : (
                         <Typography variant="body2" color="success.main">
@@ -471,9 +468,6 @@ export default function TeacherDashboard() {
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setDialogOpen(false)}>Close</Button>
-              <Button variant="contained" onClick={() => setDialogOpen(false)}>
-                Create Action Plan
-              </Button>
             </DialogActions>
           </>
         )}
