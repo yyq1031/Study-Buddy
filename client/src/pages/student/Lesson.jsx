@@ -1,18 +1,20 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import * as faceapi from 'face-api.js';
 
 function LessonPage() {
   const { classId, lessonId } = useParams();
+  const navigate = useNavigate();
   const videoRef = useRef();
   const webcamRef = useRef();
   const [isDistracted, setIsDistracted] = useState(false);
   const [expression, setExpression] = useState('');
   const [expressionLog, setExpressionLog] = useState([]);
+  const [videoFinished, setVideoFinished] = useState(false);
+  const [webcamStream, setWebcamStream] = useState(null);
   const distractionCounter = useRef(0);
   const intervalId = useRef(null);
 
-  // Load face-api models and start webcam
   useEffect(() => {
     const loadModelsAndStart = async () => {
       const MODEL_URL = '/models';
@@ -27,13 +29,13 @@ function LessonPage() {
     };
 
     loadModelsAndStart();
-
     return () => clearInterval(intervalId.current);
   }, []);
 
   const startWebcam = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      setWebcamStream(stream);
       if (webcamRef.current) {
         webcamRef.current.srcObject = stream;
         webcamRef.current.onloadedmetadata = () => {
@@ -42,6 +44,12 @@ function LessonPage() {
       }
     } catch (err) {
       console.error("Error accessing webcam:", err);
+    }
+  };
+
+  const stopWebcam = () => {
+    if (webcamStream) {
+      webcamStream.getTracks().forEach(track => track.stop());
     }
   };
 
@@ -63,8 +71,6 @@ function LessonPage() {
         distractionCounter.current = 0;
 
         const expressions = detection.expressions;
-        console.log("Raw Expressions:", expressions);
-
         const sorted = Object.entries(expressions)
           .filter(([_, val]) => val > 0.1)
           .sort((a, b) => b[1] - a[1]);
@@ -79,6 +85,7 @@ function LessonPage() {
   };
 
   const handleVideoEnded = () => {
+    setVideoFinished(true);
     const summary = expressionLog.reduce((acc, exp) => {
       acc[exp] = (acc[exp] || 0) + 1;
       return acc;
@@ -88,9 +95,34 @@ function LessonPage() {
     alert("Lesson complete! Expression summary:\n" + JSON.stringify(summary, null, 2));
   };
 
+  const buttonStyle = {
+    padding: "10px 24px",
+    minWidth: "120px",
+    backgroundColor: "#007bff",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "16px",
+    textAlign: "center"
+  };
+
+  const greenButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: "#28a745"
+  };
+
+  const disabledButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: "#ccc",
+    cursor: "not-allowed"
+  };
+
   return (
     <div style={{ padding: '20px' }}>
-      <h2>Lesson: {lessonId} (Class {classId})</h2>
+      <div>
+        <h2 style={{ display: 'inline-block', marginRight: '20px' }}>Lesson: {lessonId} (Class {classId})</h2>
+      </div>
 
       <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
         <div>
@@ -102,7 +134,42 @@ function LessonPage() {
             src="https://www.w3schools.com/html/mov_bbb.mp4"
             onEnded={handleVideoEnded}
           />
+
+          <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "20px" }}>
+            <button
+              onClick={() => {
+                stopWebcam();
+                alert("Previous clicked");
+              }}
+              style={buttonStyle}
+            >
+              Previous
+            </button>
+
+            <button
+              onClick={() => {
+                stopWebcam();
+                navigate('/quiz');
+              }}
+              style={videoFinished ? greenButtonStyle : disabledButtonStyle}
+              disabled={!videoFinished}
+            >
+              Take Quiz
+            </button>
+
+            <button
+              onClick={() => {
+                stopWebcam();
+                alert("Next clicked");
+              }}
+              style={videoFinished ? buttonStyle : disabledButtonStyle}
+              disabled={!videoFinished}
+            >
+              Next
+            </button>
+          </div>
         </div>
+
         <div>
           <h3>Your Webcam (Live)</h3>
           <video
