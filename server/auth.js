@@ -1,71 +1,69 @@
 require('dotenv').config();
 
-const bcrypt = require('bcrypt');
 const express = require("express");
-
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const URL = process.env.MONGODB_URL || '';
-const client = new MongoClient(URL, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    }
-});
-
-let db = null;
-async function connectToDB() {
-    if (!db) {
-        await client.connect();
-        db = client.db(process.env.DB_NAME)
-    }
-    return db;
-}
+const admin = require('firebase-admin')
 
 const router = express.Router();
 
-router.post('/signup', async (req, res) => {
-    const { email, password } = req.body;
+const serviceAccount = require('./firebase-server-account.json')
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
+const db = admin.firestore();
+
+router.post("/getprofile", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const idToken = authHeader.split("Bearer ")[1];
     try {
-        const db = await connectToDB();
-        const users = db.collection('users');
+        const decoded = await admin.auth().verifyIdToken(idToken);
+        const uid = decoded.uid;
 
-        const existingUser = await users.findOne({email});
-        if (existingUser) {
-            return res.status(400).json({message:"User already exists"});
-        }
-        
-        const passwordHash = await bcrypt.hash(password, 10);
-
-        await users.insertOne({
-            email: email, 
-            passwordHash: passwordHash, 
-            details: [],
-        });
-
-        res.json({ message: "User created" });
+        const userDocRef = db.collection("users").doc(uid);
+        const userDoc = await userDocRef.get();
+        if (!userDoc.exists) {
+            const newUser = {
+                name: req.body.name || 'Jane Doe',
+                email: req.body.email,
+                role: 'student',
+                createdAt: new Date().toISOString(),
+                classes: []
+            }
+            await userDocRef.set(newUser);
+            return res.json(newUser);
+            }
+        return res.json(userDoc.data());
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server error" });
+        console.error("Token verification failed:", err);
+        res.status(401).json({ message: "Invalid or expired token. Sign in again." });
     }
 })
-    
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+
+router.post("/classes", async (req, res) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const idToken = authHeader.split("Bearer ")[1];
+
     try {
-        const db = await connectToDB();
-        const users = db.collection('users');
+        const decoded = await admin.auth().verifyIdToken(idToken);
+        const uid = decoded.uid;
 
-        const existingUser = await users.findOne({email});
-
-        if (!existingUser || !(await bcrypt.compare(password, existingUser.passwordHash))) {
-            return res.status(401).json({ message: "Invalid credentials" });
+        const userDoc = await db.collection("users").doc(uid).get();
+        if (!userDoc.exists) {
+            return res.status(404).json({message: "User data not found"});
         }
-        res.json({message: "Login success"});
-
+        return res.json(userDoc.data());
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server error" });
+        console.error("Token verification failed:", err);
+        res.status(401).json({ message: "Invalid or expired token. Sign in again." });
     }
 })
 
