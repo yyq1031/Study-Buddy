@@ -5,6 +5,7 @@ import About from './pages/About'
 import SignIn from './pages/SignIn';
 import NavigationBar from './components/NavigationBar';
 import Dashboard from './pages/Teacher/Dashboard';
+import TeacherUploadInterface from './pages/Teacher/TeacherUploadInterface';
 
 function App() {
   return(
@@ -15,6 +16,7 @@ function App() {
         <Route path='/about' element={<About/>} />
         <Route path="/signin" element={<SignIn />} />
         <Route path='/dashboard' element={<Dashboard /> }/>
+        <Route path='/teacheruploadinterace' element={<TeacherUploadInterface /> }/>
       </Routes>
     </Router>
   )
