@@ -54,8 +54,8 @@ function Classes({ user }) {
                 </Box>
               </CardContent>
               <CardActions>
-                <Link to="/quiz" style={{ textDecoration: 'none' }}>
-                  <Button size="small" variant="contained">Go to Quiz</Button>
+                <Link to={`/class/${cls.id}`} style={{ textDecoration: 'none' }}>
+                  <Button size="small" variant="contained">Study</Button>
                 </Link>
               </CardActions>
             </Card>
