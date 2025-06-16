@@ -13,6 +13,8 @@ import LessonPage from './pages/student/Lesson';
 import ClassesPage from './pages/student/Classes';
 import Quiz from './pages/student/Quiz';
 import SignOut from './pages/SignOut';
+import Subject from './pages/student/Subject';
+
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -57,7 +59,10 @@ function App() {
         <Route path="/quiz" element={<Quiz />} />
         <Route path="/signout" element={<SignOut />} />
         <Route path="/quiz/:classId/:lessonId" element={<Quiz />} />
-
+        <Route
+      path="/class/:classId"
+      element={user?.role === 'student' ? <Subject user={user} /> : <Navigate to="/" />}
+    />
       </Routes>
     </Router>
   );
