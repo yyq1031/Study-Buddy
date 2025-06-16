@@ -45,7 +45,6 @@ export const login = async (email, password) => {
       },
       body: JSON.stringify({ email }),
     });
-
   const data = await response.json();
   return { token: idToken, userData: data };
 }
