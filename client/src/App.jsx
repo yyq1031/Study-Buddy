@@ -9,7 +9,7 @@ import AccountPage from './pages/Account';
 import NavigationBar from './components/NavigationBar';
 import Dashboard from './pages/Teacher/Dashboard';
 import TeacherUploadInterface from './pages/Teacher/TeacherUploadInterface';
-import LessonPage from './pages/Lesson';
+import LessonPage from './pages/student/Lesson';
 import ClassesPage from './pages/student/Classes';
 import Quiz from './pages/student/Quiz';
 import SignOut from './pages/SignOut';
