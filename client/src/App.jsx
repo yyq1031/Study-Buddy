@@ -7,9 +7,11 @@ import About from './pages/About';
 import SignIn from './pages/SignIn';
 import AccountPage from './pages/Account';
 import NavigationBar from './components/NavigationBar';
+import Dashboard from './pages/Teacher/Dashboard';
+import TeacherUploadInterface from './pages/Teacher/TeacherUploadInterface';
+import LessonPage from './pages/student/Lesson';
 import ClassesPage from './pages/student/Classes';
 import Quiz from './pages/student/Quiz';
-import LessonPage from './pages/student/Lesson'; 
 import SignOut from './pages/SignOut';
 
 function App() {
@@ -30,6 +32,12 @@ function App() {
     <Router>
       <NavigationBar />
       <Routes>
+        <Route path='/' element={<Home />} />
+        <Route path='/about' element={<About/>} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path='/dashboard' element={<Dashboard /> }/>
+        <Route path='/teacheruploadinterace' element={<TeacherUploadInterface /> }/>
+        <Route path='/lessons' element={<LessonPage /> }/> 
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route

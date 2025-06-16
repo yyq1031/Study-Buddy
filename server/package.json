@@ -17,6 +17,7 @@
     "firebase-admin": "^13.4.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.17.0",
-    "mongoose": "^8.15.2"
+    "mongoose": "^8.15.2",
+    "multer": "^2.0.1"
   }
 }
