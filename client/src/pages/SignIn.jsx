@@ -1,5 +1,6 @@
 // client/src/pages/SignIn.jsx
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Avatar,
   Button,
@@ -19,14 +20,18 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 const theme = createTheme();
 
 export default function SignIn() {
+  const navigate = useNavigate(); 
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-      remember: data.get("remember"),
-    });
+    const email = data.get("email");
+    const password = data.get("password");
+
+    if (email && password) {
+      console.log("Login successful:", { email, password });
+      navigate("/account"); 
+    }
   };
 
   return (
@@ -42,7 +47,7 @@ export default function SignIn() {
             backgroundColor: "#f5f5f5",
             padding: 4,
             borderRadius: 2,
-            boxShadow: 3
+            boxShadow: 3,
           }}
         >
           <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
@@ -76,12 +81,7 @@ export default function SignIn() {
               control={<Checkbox name="remember" value="remember" color="primary" />}
               label="Remember me"
             />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
+            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
               Sign In
             </Button>
             <Grid container spacing={1}>
