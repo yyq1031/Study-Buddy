@@ -5,6 +5,7 @@ const base = import.meta.env.VITE_API_BASE_URL;
 export const hello_api = `${base}/hello`;
 export const signup_api = `${base}/singup`;
 export const getprofile_api = `${base}/getprofile`
+export const getclasses_api = `${base}/getClasses`
 
 export const signUp = async (email, password) => {
   const auth = getAuth(app);
@@ -63,4 +64,26 @@ export const profile = async (idToken) => {
 
   const data = await response.json();
   return data;
+}
+
+export const getClasses = async (idToken) => {
+  try {
+    const response = await fetch(getclasses_api, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${idToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Server error: ${response.status} - ${text}`);
+    }
+    const data = await response.json();
+    return { token: idToken, userData: data };
+
+  } catch (error) {
+    console.error("Signup error:", error.message);
+  }
 }

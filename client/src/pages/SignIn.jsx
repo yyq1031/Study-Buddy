@@ -10,7 +10,7 @@ import { login } from "../api";
 
 const theme = createTheme();
 
-export default function SignIn({onSignIn}) {
+export default function SignIn({onSignIn = () => {}}) {
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {

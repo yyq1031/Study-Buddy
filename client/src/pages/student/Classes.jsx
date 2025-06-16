@@ -11,9 +11,15 @@ import {
   LinearProgress,
   Box,
 } from '@mui/material';
+import { useEffect } from 'react';
+import { getClasses } from '../../api';
 
 function Classes({ user }) {
-  console.log(user);
+  useEffect(() => {
+    getClasses(localStorage.getItem('token'));
+    console.log(user);
+  })
+  
   // get classes of user from backend
   user.classes = [
     { id: 1, name: "Math 101", latestLesson: "Derivatives", latestLessonId: "derivatives" },

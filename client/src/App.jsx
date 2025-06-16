@@ -57,7 +57,8 @@ function App() {
         <Route path="/classes" element={user?.role === 'student' ? <ClassesPage user={user} /> : <Navigate to="/" />} />
         <Route path="/class/:classId/lesson/:lessonId" element={<LessonPage />} />
         <Route path="/quiz" element={<Quiz />} />
-        <Route path="/signout" element={<SignOut />} />
+        <Route path="/signout" onSignIn={() => {setUser(user)}}
+        element={<SignOut />} />
         <Route path="/quiz/:classId/:lessonId" element={<Quiz />} />
         <Route
       path="/class/:classId"

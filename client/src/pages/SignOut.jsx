@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { getAuth, signOut } from "firebase/auth";
 
-function SignOut() {
+function SignOut({onSignOut = () => {}}) {
   const navigate = useNavigate();
   useEffect(() => {
   const auth = getAuth();
@@ -10,12 +10,13 @@ function SignOut() {
     .then(() => {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+      onSignOut();
       navigate("/");
     })
     .catch((error) => {
       console.error("Error signing out:", error);
     });
-}, [navigate]);
+}, [navigate, onSignOut]);
   return <></>
 }
 
