@@ -37,13 +37,6 @@ function Classes({ user }) {
                     {cls.name}
                   </Link>
                 </Typography>
-                <Typography
-                  variant="body2"
-                  color="textSecondary"
-                  sx={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
-                >
-                  Continue: <Link to={`/class/${cls.id}/lesson/${cls.latestLessonId}`} style={{ textDecoration: 'none', color: '#1976d2' }}>{cls.latestLesson}</Link>
-                </Typography>
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="body2">Progress</Typography>
                   <LinearProgress
