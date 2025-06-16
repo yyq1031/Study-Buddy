@@ -1,6 +1,5 @@
 import { hello_api } from "../api";
 import { useEffect, useState } from "react";
-import NavigationBar from "../components/NavigationBar";
 
 function Home() {
       const [message, setMessage] = useState('');

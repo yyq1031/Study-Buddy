@@ -1,4 +1,4 @@
-import React from "react";
+// client/src/pages/SignIn.jsx
 import { useNavigate } from "react-router-dom";
 import {
   Avatar, Button, TextField, FormControlLabel, Checkbox, Link,
@@ -6,32 +6,26 @@ import {
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { login } from "../api";
 
 const theme = createTheme();
 
-export default function SignIn({ onSignIn }) {
+export default function SignIn({onSignIn}) {
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const email = data.get("email");
     const password = data.get("password");
 
     if (email && password) {
-      // use email to determine role
-      const role = email.includes("student") ? "student" : "teacher";
+      const {token, userData} = await login(email, password);
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
 
-      const userData = {
-        name: role === "student" ? "Alice" : "Prof. Smith",
-        email,
-        role,
-        classes: role === "student" ? [
-          { id: 1, name: "Math 101", latestLesson: "Derivatives", latestLessonId: "derivatives" },
-          { id: 2, name: "Chemistry", latestLesson: "Acids and Bases", latestLessonId: "acids-bases" }
-        ] : []
-      };
-
+      const role = userData.role;
+      
       onSignIn(userData); 
 
       navigate(role === "student" ? "/classes" : "/account"); // change to teacher dashboard

@@ -10,11 +10,20 @@ import NavigationBar from './components/NavigationBar';
 import ClassesPage from './pages/student/Classes';
 import Quiz from './pages/student/Quiz';
 import LessonPage from './pages/student/Lesson'; 
+import SignOut from './pages/SignOut';
 
 function App() {
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
+    try {
+      return savedUser ? JSON.parse(savedUser) : null;
+      
+    } catch (error) {
+      console.warn(error);
+      console.warn("Invalid JSON in localStorage 'user':", savedUser);
+      localStorage.removeItem('user');
+      return null;
+    }
   });
 
   return (
@@ -38,6 +47,7 @@ function App() {
         <Route path="/classes" element={user?.role === 'student' ? <ClassesPage user={user} /> : <Navigate to="/" />} />
         <Route path="/class/:classId/lesson/:lessonId" element={<LessonPage />} />
         <Route path="/quiz" element={<Quiz />} />
+        <Route path="/signout" element={<SignOut />} />
         <Route path="/quiz/:classId/:lessonId" element={<Quiz />} />
 
       </Routes>
