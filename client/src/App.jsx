@@ -12,7 +12,6 @@ import TeacherUploadInterface from './pages/Teacher/TeacherUploadInterface';
 import LessonPage from './pages/Lesson';
 import ClassesPage from './pages/student/Classes';
 import Quiz from './pages/student/Quiz';
-import LessonPage from './pages/student/Lesson'; 
 import SignOut from './pages/SignOut';
 
 
