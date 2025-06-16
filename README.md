@@ -1,7 +1,8 @@
 # Lifehack
 
-To set up:
-git clone
+To set up the project, run these commands:
+
+git clone <repository-url>
 cd server
 npm install
 cd ..
