@@ -1,101 +1,154 @@
-import { useState } from "react";
+import React, { useRef, useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import * as faceapi from 'face-api.js';
+import { Button } from '@mui/material';
 
-function Quiz() {
-  const questionBank = [
-    {
-      question: "What is the capital of France?",
-      options: ["Berlin", "London", "Paris", "Rome"],
-      answer: "Paris",
-    },
-    {
-      question: "Which language is used for web apps?",
-      options: ["PHP", "Python", "Javascript", "All"],
-      answer: "All",
-    },
-    {
-      question: "What does JSX stand for?",
-      options: [
-        "Javascript XML",
-        "Java Syntax eXtension",
-        "Just a Simple eXample",
-        "None of the above",
-      ],
-      answer: "Javascript XML",
-    },
-  ];
+function LessonPage() {
+  const { classId, lessonId } = useParams();
+  const navigate = useNavigate();
+  const videoRef = useRef();
+  const webcamRef = useRef();
+  const [isDistracted, setIsDistracted] = useState(false);
+  const [expression, setExpression] = useState('');
+  const [expressionLog, setExpressionLog] = useState([]);
+  //const [videoFinished, setVideoFinished] = useState(false);
+  const distractionCounter = useRef(0);
+  const intervalId = useRef(null);
 
-  const initialAnswers = Array(questionBank.length).fill(null);
-  const [userAnswers, setUserAnswers] = useState(initialAnswers);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const selectedAnswer = userAnswers[currentQuestion];
-  const [isQuizFinished, setIsQuizFinished] = useState(false);
+  useEffect(() => {
+    const loadModelsAndStart = async () => {
+      const MODEL_URL = '/models';
+      try {
+        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
+        console.log("Models loaded");
+        startWebcam();
+      } catch (err) {
+        console.error("Model loading error:", err);
+      }
+    };
 
-  function handleSelectOption(option) {
-    const newUserAnswers = [...userAnswers];
-    newUserAnswers[currentQuestion] = option;
-    setUserAnswers(newUserAnswers);
-  }
+    loadModelsAndStart();
 
-  function goToNext() {
-    if (currentQuestion === questionBank.length - 1) {
-      setIsQuizFinished(true);
-    } else {
-      setCurrentQuestion(currentQuestion + 1);
+    return () => clearInterval(intervalId.current);
+  }, []);
+
+  const startWebcam = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (webcamRef.current) {
+        webcamRef.current.srcObject = stream;
+        webcamRef.current.onloadedmetadata = () => {
+          startMonitoring();
+        };
+      }
+    } catch (err) {
+      console.error("Error accessing webcam:", err);
     }
-  }
+  };
 
-  function goToPrev() {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-    }
-  }
+  const startMonitoring = () => {
+    intervalId.current = setInterval(async () => {
+      if (!webcamRef.current) return;
+      const detection = await faceapi
+        .detectSingleFace(webcamRef.current, new faceapi.TinyFaceDetectorOptions())
+        .withFaceExpressions();
 
-  function restartQuiz() {
-    setUserAnswers(initialAnswers);
-    setCurrentQuestion(0);
-    setIsQuizFinished(false);
-  }
+      if (!detection) {
+        setIsDistracted(true);
+        distractionCounter.current += 1;
+        if (distractionCounter.current >= 3 && videoRef.current && !videoRef.current.paused) {
+          videoRef.current.pause();
+        }
+      } else {
+        setIsDistracted(false);
+        distractionCounter.current = 0;
 
-  if (isQuizFinished) {
-    const score = userAnswers.reduce(
-      (acc, answer, i) => (answer === questionBank[i].answer ? acc + 1 : acc),
-      0
-    );
+        const expressions = detection.expressions;
+        console.log("Raw Expressions:", expressions);
 
-    return (
-      <div>
-        <h2>Quiz Completed!</h2>
-        <p className="score">Your Score: {score}/{questionBank.length}</p>
-        <button className="restart-button" onClick={restartQuiz}>
-          Restart Quiz
-        </button>
-      </div>
-    );
-  }
+        const sorted = Object.entries(expressions)
+          .filter(([_, val]) => val > 0.1)
+          .sort((a, b) => b[1] - a[1]);
+
+        if (sorted.length > 0) {
+          const top = sorted[0][0];
+          setExpression(top);
+          setExpressionLog((prev) => [...prev, top]);
+        }
+      }
+    }, 2000);
+  };
+
+  const handleVideoEnded = () => {
+    setVideoFinished(true);
+    const summary = expressionLog.reduce((acc, exp) => {
+      acc[exp] = (acc[exp] || 0) + 1;
+      return acc;
+    }, {});
+
+    console.log("Final expression log:", expressionLog);
+    alert("Lesson complete! Expression summary:\n" + JSON.stringify(summary, null, 2));
+
+    navigate(`/quiz/${classId}/${lessonId}`, { state: { emotionSummary: summary } });
+  };
+
+  const goToQuiz = () => {
+    const summary = expressionLog.reduce((acc, exp) => {
+      acc[exp] = (acc[exp] || 0) + 1;
+      return acc;
+    }, {});
+
+    navigate(`/quiz/${classId}/${lessonId}`, { state: { emotionSummary: summary } });
+  };
 
   return (
-    <div>
-      <h2>Question {currentQuestion + 1}</h2>
-      <p className="question">{questionBank[currentQuestion].question}</p>
-      {questionBank[currentQuestion].options.map((option) => (
-        <button
-          key={option}
-          className={"option" + (selectedAnswer === option ? " selected" : "")}
-          onClick={() => handleSelectOption(option)}
+    <div style={{ padding: '20px', position: 'relative', minHeight: '100vh' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h2>Lesson: {lessonId} (Class {classId})</h2>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={goToQuiz}
+          disabled={!videoFinished}
+          sx={{ ml: 2 }}
         >
-          {option}
-        </button>
-      ))}
-      <div className="nav-buttons">
-        <button onClick={goToPrev} disabled={currentQuestion === 0}>
-          Previous
-        </button>
-        <button onClick={goToNext} disabled={!selectedAnswer}>
-          {currentQuestion === questionBank.length - 1 ? "Finish Quiz" : "Next"}
-        </button>
+        Go to Quiz
+        </Button>
       </div>
+
+      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+        <div>
+          <h3>Lecture Video</h3>
+          <video
+            ref={videoRef}
+            controls
+            width="500"
+            src="https://www.w3schools.com/html/mov_bbb.mp4"
+            onEnded={handleVideoEnded}
+          />
+        </div>
+
+        <div>
+          <h3>Your Webcam (Live)</h3>
+          <video
+            ref={webcamRef}
+            autoPlay
+            muted
+            width="300"
+            style={{ border: '2px solid #ccc', borderRadius: '8px' }}
+          />
+          <p style={{ color: isDistracted ? 'red' : 'green' }}>
+            {isDistracted ? 'You seem distracted!' : 'Focus detected!'}
+          </p>
+          {expression && !isDistracted && (
+            <p><strong>Detected Emotion:</strong> {expression}</p>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 }
 
-export default Quiz;
+export default LessonPage;

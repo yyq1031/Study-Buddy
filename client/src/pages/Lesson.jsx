@@ -1,13 +1,13 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import * as faceapi from 'face-api.js';
+import React, { useRef, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import * as faceapi from "face-api.js";
 
 function LessonPage() {
   const { classId, lessonId } = useParams();
   const videoRef = useRef();
   const webcamRef = useRef();
   const [isDistracted, setIsDistracted] = useState(false);
-  const [expression, setExpression] = useState('');
+  const [expression, setExpression] = useState("");
   const [expressionLog, setExpressionLog] = useState([]);
   const distractionCounter = useRef(0);
   const intervalId = useRef(null);
@@ -15,7 +15,7 @@ function LessonPage() {
   // Load face-api models and start webcam
   useEffect(() => {
     const loadModelsAndStart = async () => {
-      const MODEL_URL = '/models';
+      const MODEL_URL = "/models";
       try {
         await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
         await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
@@ -49,13 +49,20 @@ function LessonPage() {
     intervalId.current = setInterval(async () => {
       if (!webcamRef.current) return;
       const detection = await faceapi
-        .detectSingleFace(webcamRef.current, new faceapi.TinyFaceDetectorOptions())
+        .detectSingleFace(
+          webcamRef.current,
+          new faceapi.TinyFaceDetectorOptions()
+        )
         .withFaceExpressions();
 
       if (!detection) {
         setIsDistracted(true);
         distractionCounter.current += 1;
-        if (distractionCounter.current >= 3 && videoRef.current && !videoRef.current.paused) {
+        if (
+          distractionCounter.current >= 3 &&
+          videoRef.current &&
+          !videoRef.current.paused
+        ) {
           videoRef.current.pause();
         }
       } else {
@@ -85,14 +92,19 @@ function LessonPage() {
     }, {});
 
     console.log("Final expression log:", expressionLog);
-    alert("Lesson complete! Expression summary:\n" + JSON.stringify(summary, null, 2));
+    alert(
+      "Lesson complete! Expression summary:\n" +
+        JSON.stringify(summary, null, 2)
+    );
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Lesson: {lessonId} (Class {classId})</h2>
+    <div style={{ padding: "20px" }}>
+      <h2>
+        Lesson: {lessonId} (Class {classId})
+      </h2>
 
-      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
         <div>
           <h3>Lecture Video</h3>
           <video
@@ -103,6 +115,9 @@ function LessonPage() {
             onEnded={handleVideoEnded}
           />
         </div>
+
+        
+
         <div>
           <h3>Your Webcam (Live)</h3>
           <video
@@ -110,16 +125,32 @@ function LessonPage() {
             autoPlay
             muted
             width="300"
-            style={{ border: '2px solid #ccc', borderRadius: '8px' }}
+            style={{ border: "2px solid #ccc", borderRadius: "8px" }}
           />
-          <p style={{ color: isDistracted ? 'red' : 'green' }}>
-            {isDistracted ? 'You seem distracted!' : 'Focus detected!'}
+          <p style={{ color: isDistracted ? "red" : "green" }}>
+            {isDistracted ? "You seem distracted!" : "Focus detected!"}
           </p>
           {expression && !isDistracted && (
-            <p><strong>Detected Emotion:</strong> {expression}</p>
+            <p>
+              <strong>Detected Emotion:</strong> {expression}
+            </p>
           )}
         </div>
       </div>
+      <button
+        onClick={() => alert("Upload button clicked!")}
+        style={{
+          marginTop: "10px",
+          padding: "8px 16px",
+          backgroundColor: "#007bff",
+          color: "#fff",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }}
+      >
+        Upload Material
+      </button>
     </div>
   );
 }

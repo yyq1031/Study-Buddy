@@ -38,6 +38,8 @@ function App() {
         <Route path="/classes" element={user?.role === 'student' ? <ClassesPage user={user} /> : <Navigate to="/" />} />
         <Route path="/class/:classId/lesson/:lessonId" element={<LessonPage />} />
         <Route path="/quiz" element={<Quiz />} />
+        <Route path="/quiz/:classId/:lessonId" element={<Quiz />} />
+
       </Routes>
     </Router>
   );
