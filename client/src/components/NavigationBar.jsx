@@ -75,7 +75,7 @@ function NavigationBar(props) {
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
             {navItems.map((item) => (
-              <Button key={item.name} sx={{ color: '#fff' }}>
+              <Button key={item.name} component={Link} to={item.link} sx={{ color: '#fff' }}>
                 {item.name}
               </Button>
             ))}
