@@ -5,7 +5,7 @@ const express = require("express");
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const URL = process.env.MONGODB_URL || '';
-const client = new MongoClient(uri, {
+const client = new MongoClient(URL, {
     serverApi: {
         version: ServerApiVersion.v1,
         strict: true,
@@ -13,6 +13,7 @@ const client = new MongoClient(uri, {
     }
 });
 
+let db = null;
 async function connectToDB() {
     if (!db) {
         await client.connect();
@@ -57,7 +58,7 @@ router.post('/login', async (req, res) => {
 
         const existingUser = await users.findOne({email});
 
-        if (!existingUser || !(await bcrypt.compare(password, users.passwordHash))) {
+        if (!existingUser || !(await bcrypt.compare(password, existingUser.passwordHash))) {
             return res.status(401).json({ message: "Invalid credentials" });
         }
         res.json({message: "Login success"});

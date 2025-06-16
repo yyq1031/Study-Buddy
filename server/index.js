@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const express = require("express");
 const cors = require("cors");
-const loginRoutes = require('auth');
+const loginRoutes = require('./auth.js');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
