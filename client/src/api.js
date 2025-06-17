@@ -202,3 +202,26 @@ export const updateQuizScore = async (quizes, confidenceLevels, lessonId, idToke
     console.error("Error updating quiz score:", error.message);
   }
 };
+
+export const getClassLessonIds = async (idToken) => {
+  try {
+    const response = await fetch(`${base}/getClassAndLessons`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${idToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Server error: ${response.status} - ${text}`);
+    }
+
+    const data = await response.json();
+    return data;
+
+  } catch (error) {
+    console.error("Error getting class/lesson ids/names:", error.message);
+  }
+};
