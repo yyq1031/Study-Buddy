@@ -163,7 +163,7 @@ function LessonPage() {
             <button
               onClick={() => {
                 stopWebcam();
-                navigate(`/quiz/${classId}/${lessonId}`);
+                navigate(`/${classId}/${lessonId}/video`);
               }}
               style={videoFinished ? greenButtonStyle : disabledButtonStyle}
               disabled={!videoFinished}

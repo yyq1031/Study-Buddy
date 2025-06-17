@@ -75,7 +75,7 @@ function App() {
         />
         <Route path="/editClasses" element={<AddClass />} />
         <Route path="/test" element={<AddClass />} />
-        <Route path='/classes/dashboard/teacherview' element={<TeacherClassDashboard /> }/>
+        <Route path='/classes/dashboard/teacherview/:classId' element={<TeacherClassDashboard /> }/>
       </Routes>
     </Router>
   );

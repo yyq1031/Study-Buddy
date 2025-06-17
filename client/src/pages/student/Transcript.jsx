@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import * as faceapi from 'face-api.js';
 
 function Transcript() {
+  const { classId, lessonId } = useParams();
   const webcamRef = useRef();
   const [expression, setExpression] = useState('');
   const [expressionLog, setExpressionLog] = useState([]);
@@ -220,7 +221,7 @@ function Transcript() {
         <button
           onClick={() => {
             stopWebcam();
-            navigate('/quiz');
+            navigate(`/${classId}/${lessonId}/text`);
           }}
           style={canProceed ? greenButtonStyle : disabledButtonStyle}
           disabled={!canProceed}
