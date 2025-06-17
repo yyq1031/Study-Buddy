@@ -109,7 +109,7 @@ function Subject({ user }) {
           <CardActionArea
             onClick={() =>
               navigate(recommended?.lessonId 
-                ? `/class/${classId}/lesson/${recommended?.lessonId}`
+                ? `/class/${classId}/lesson/${recommended?.lessonId}/preference`
                 : `/class/${classId}`)
             }
           >

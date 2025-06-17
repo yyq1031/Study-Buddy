@@ -44,7 +44,6 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path='/dashboard' element={<Dashboard /> }/>
         <Route path='/teacheruploadinterace' element={<TeacherUploadInterface /> }/>
-        <Route path='/lesson' element={<LessonPage /> }/> 
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route
@@ -55,18 +54,18 @@ function App() {
               localStorage.setItem('user', JSON.stringify(userData));
             }} />
           ) : (
-            <Navigate to={user.role === 'student' ? "/classes" : "/account"} />
+            <Navigate to={user.role === 'student' ? "/classes" : "/dashboard"} />
           )}
         />
         <Route path="/account" element={user?.role === 'teacher' ? <AccountPage /> : <Navigate to="/" />} />
         <Route path="/classes" element={<ClassesPage user={user} />} />
-        <Route path="/class/:classId/lesson/:lessonId" element={<LessonPage />} />
-        <Route path="/quiz" element={<Quiz />} />
+        <Route path="/class/:classId/lesson/:lessonId/video" element={<LessonPage />} />
+        <Route path="/class/:classId/lesson/:lessonId/transcript" element={<Transcript />} />
         <Route path="/signout" onSignIn={() => {setUser(user)}}
         element={<SignOut />} />
-        <Route path="/quiz/:classId/:lessonId" element={<Quiz />} />
-        <Route path="/preference" element={<PreferencePage />} />
-        <Route path="/transcript" element={<Transcript />} />
+        <Route path="/:classId/:lessonId/video" element={<Quiz />} />
+        <Route path="/:classId/:lessonId/text" element={<Quiz />} />
+        <Route path="/class/:classId/lesson/:lessonId/preference" element={<PreferencePage />} />
         <Route path="/class/:classId"
         element={user?.role === 'student' ? <Subject user={user} /> : <Navigate to="/" />}
         />

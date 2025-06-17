@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Container,
@@ -15,6 +15,8 @@ import { useEffect } from 'react';
 import { getClasses } from '../../api';
 
 function Classes({ user }) {
+  const [classes, setClasses] = useState([]);
+
   useEffect(() => {
     const fetchClasses = async () => {
       try {
@@ -40,7 +42,7 @@ function Classes({ user }) {
         Your Classes:
       </Typography>
       <Grid container spacing={3}>
-        {user.classes.map((cls) => (
+        {classes.map((cls) => (
           <Grid item xs={12} md={6} key={cls.id}>
             <Card variant="outlined" sx={{ boxShadow: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
               <CardContent sx={{ flexGrow: 1 }}>
@@ -49,14 +51,14 @@ function Classes({ user }) {
                     {cls.name}
                   </Link>
                 </Typography>
-                {/* <Box sx={{ mt: 2 }}>
+                <Box sx={{ mt: 2 }}>
                   <Typography variant="body2">Progress</Typography>
                   <LinearProgress
                     variant="determinate"
                     value={cls.progress || 0}
                     sx={{ height: 10, borderRadius: 5 }}
                   />
-                </Box> */}
+                </Box>
               </CardContent>
               <CardActions>
                 { user.role == 'teacher' 

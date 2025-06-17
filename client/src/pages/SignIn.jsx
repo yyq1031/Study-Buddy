@@ -1,4 +1,3 @@
-// client/src/pages/SignIn.jsx
 import { useNavigate } from "react-router-dom";
 import {
   Avatar, Button, TextField, FormControlLabel, Checkbox, Link,
@@ -7,6 +6,7 @@ import {
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { login } from "../api";
+import Dashboard from "./Teacher/Dashboard";
 
 const theme = createTheme();
 
@@ -23,12 +23,17 @@ export default function SignIn({onSignIn = () => {}}) {
       const {token, userData} = await login(email, password);
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userData));
-
-      const role = userData.role;
       
       onSignIn(userData); 
 
-      navigate(role === "student" ? "/classes" : "/account"); // change to teacher dashboard
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+      const role = storedUser?.role;
+
+      if (role === "student") {
+        navigate("/classes");
+      } else if (role === "teacher") {
+        navigate("/dashboard");
+      }
     }
   };
 

@@ -8,15 +8,14 @@ function useQuery() {
 }
 function PreferencePage() {
   const [preference, setPreference] = useState('');
+  const { classId, lessonId } = useParams();
   const navigate = useNavigate();
 
   const handleSubmit = () => {
     if (preference == "video") {
-      localStorage.setItem('learningPreference', preference);
-      navigate('/lesson');
+      navigate(`/class/${classId}/lesson/${lessonId}/video`);
     } else if (preference == "text") {
-      localStorage.setItem('learningPreference', preference);
-      navigate('/transcript');
+      navigate(`/class/${classId}/lesson/${lessonId}/transcript`);
     } else {
       alert("Please select a preference.");
     }
