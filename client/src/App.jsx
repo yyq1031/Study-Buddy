@@ -59,7 +59,7 @@ function App() {
           )}
         />
         <Route path="/account" element={user?.role === 'teacher' ? <AccountPage /> : <Navigate to="/" />} />
-        <Route path="/classes" element={user?.role === 'student' ? <ClassesPage user={user} /> : <Navigate to="/" />} />
+        <Route path="/classes" element={<ClassesPage user={user} />} />
         <Route path="/class/:classId/lesson/:lessonId" element={<LessonPage />} />
         <Route path="/quiz" element={<Quiz />} />
         <Route path="/signout" onSignIn={() => {setUser(user)}}

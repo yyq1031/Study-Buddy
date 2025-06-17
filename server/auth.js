@@ -12,27 +12,34 @@ const router = express.Router();
 async function fetchDetailedClasses(classInfoList) {
   const detailedClasses = [];
 
-  // for (const { classId, nextLessonId } of classInfoList) {
   for (const map of classInfoList) {
-    const classId = map["classId"];
-    const nextLessonId = map["lessonId"];
+    const classId = map?.classId;
+    const nextLessonId = map?.lessonId;
+
+    if (!classId || typeof classId !== "string" || classId.trim() === "") {
+      console.warn("Invalid classId:", classId);
+      continue; // Skip this entry
+    }
+
     const docSnap = await db.collection("classes").doc(classId).get();
     if (!docSnap.exists) {
       console.warn(`Class with id ${classId} not found`);
       continue;
     }
 
-    const lessonDocSnap = await db.collection("lessons").doc(nextLessonId).get();
     let nextLessonInfo = null;
-    if (!lessonDocSnap.exists) {
-      console.warn(`Lesson with id ${nextLessonId} not found`);
-      continue;
-    } else {
-      nextLessonInfo = {
-        id: nextLessonId || null,
-        ...lessonDocSnap.data()
+    if (nextLessonId && nextLessonId.trim() !== "") {
+      const lessonDocSnap = await db.collection("lessons").doc(nextLessonId).get();
+      if (lessonDocSnap.exists) {
+        nextLessonInfo = {
+          id: nextLessonId,
+          ...lessonDocSnap.data(),
+        };
+      } else {
+        console.warn(`Lesson with id ${nextLessonId} not found`);
       }
     }
+
     detailedClasses.push({
       id: docSnap.id,
       ...docSnap.data(),
@@ -58,7 +65,7 @@ router.post("/getprofile", authenticate, async (req, res) => {
         const newUser = {
           name: req.body.name || "Jane Doe",
           email: req.body.email || "",
-          role: "student",
+          role: "teacher",
           createdAt: new Date().toISOString(),
           classes: [],
         };
@@ -141,7 +148,11 @@ router.post("/createClass", authenticate, async (req, res) => {
     };
 
     const classDocRef = await db.collection("classes").add(newClass);
-    classes.push(classDocRef.id);
+    const newClassEntry = {
+        classId: classDocRef.id,
+        lessonId:  null,
+      };
+    classes.push(newClassEntry);
 
     await userDocRef.update({ classes });
 
@@ -158,35 +169,51 @@ router.post("/assignStudentToClass/:classId/:studentId", authenticate, async (re
     const uid = req.user.uid;
     const userDoc = await db.collection("users").doc(uid).get();
 
-    if (userDoc.data()?.role !== "teacher") {
+    if (!userDoc.exists || userDoc.data()?.role !== "teacher") {
       return res.status(401).json({ message: "Only teachers can assign students" });
     }
 
     const { classId, studentId } = req.params;
 
-    // Update student's classes
-    const studentDocRef = db.collection("users").doc(studentId);
-    const studentDoc = await studentDocRef.get();
-    if (!studentDoc.exists) return res.status(404).json({ message: "Student not found" });
-
-    const studentClasses = studentDoc.data()?.classes || [];
-    if (!studentClasses.includes(classId)) {
-      studentClasses.push(classId);
-      await studentDocRef.update({ classes: studentClasses });
-    }
-
-    // Update class's studentIds
+    // Fetch class
     const classDocRef = db.collection("classes").doc(classId);
     const classDoc = await classDocRef.get();
-    if (!classDoc.exists) return res.status(404).json({ message: "Class not found" });
+    if (!classDoc.exists) {
+      return res.status(404).json({ message: "Class not found" });
+    }
 
-    const studentIds = classDoc.data()?.studentIds || [];
+    // Add student to class's studentIds array if not already present
+    const studentIds = classDoc.data().studentIds || [];
     if (!studentIds.includes(studentId)) {
       studentIds.push(studentId);
       await classDocRef.update({ studentIds });
     }
 
-    res.json({ message: `Student ${studentDoc.data().name} successfully enrolled in class ${classDoc.data().name}` });
+    // Fetch student
+    const studentDocRef = db.collection("users").doc(studentId);
+    const studentDoc = await studentDocRef.get();
+    if (!studentDoc.exists) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Prepare student class structure { classId, lessonId }
+    const studentClasses = studentDoc.data().classes || [];
+    const alreadyAssigned = studentClasses.some(c => c.classId === classId);
+
+    if (!alreadyAssigned) {
+      const lessonIds = classDoc.data().lessons || [];
+      const newClassEntry = {
+        classId,
+        lessonId: lessonIds.length > 0 ? lessonIds[0] : null,
+      };
+      studentClasses.push(newClassEntry);
+      await studentDocRef.update({ classes: studentClasses });
+    }
+
+    res.json({
+      message: `Student ${studentDoc.data().name} successfully enrolled in class ${classDoc.data().name}`,
+    });
+
   } catch (err) {
     console.error("Error in /assignStudentToClass:", err);
     res.status(500).json({ message: "Internal server error" });
@@ -269,9 +296,9 @@ router.get("/getAllStudents", authenticate, requireRole("teacher"), async (req, 
   }
 });
 
-router.get('/getStudentClassProgress/:classId/:studentId', authenticate, async (req, res) => {
+router.get('/getStudentClassProgress/:classId', authenticate, async (req, res) => {
   try {
-    const { classId, _ } = req.params;
+    const { classId } = req.params;
     const studentId = req.user.uid;
 
     // Only allow access if requester is student (self) or teacher
@@ -315,7 +342,34 @@ router.get('/getStudentClassProgress/:classId/:studentId', authenticate, async (
       });
     }
 
+    const userDoc = await db.collection("users").doc(studentId).get();
+    if (!userDoc.exists) return res.status(404).json({ message: "User data not found" });
+    const classInfoList = userDoc.data()?.classes || [];
+
+    let nextLessonInfo = null;
+    for (const map of classInfoList) {
+      const currClassId = map["classId"];
+      if (currClassId != classId) {
+        continue;
+      }
+      const nextLessonId = map["lessonId"];
+      if (nextLessonId && nextLessonId.trim() !== "") {
+        const lessonDocSnap = await db.collection("lessons").doc(nextLessonId).get();
+        if (lessonDocSnap.exists) {
+          nextLessonInfo = {
+            id: nextLessonId,
+            ...lessonDocSnap.data()
+          };
+        } else {
+          console.warn(`Lesson with id ${nextLessonId} not found`);
+        }
+      }
+      break;
+    }
+
+
     res.json({
+      nextLesson: nextLessonInfo,
       totalLessons: lessons.length,
       completedLessons: completedCount,
       details,
@@ -323,6 +377,39 @@ router.get('/getStudentClassProgress/:classId/:studentId', authenticate, async (
   } catch (err) {
     console.error('Error in /getStudentClassProgress:', err);
     res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// GET /getClasses - get all classes for the authenticated user
+router.get("/getLesson/:lessonId", authenticate, async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+    const studentId = req.user.uid;
+    if (req.user.role != student) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+    const userDoc = await db.collection("users").doc(uid).get();
+    if (!userDoc.exists) return res.status(404).json({ message: "User data not found" });
+
+    const location = `/progress/${lessonId.trim()}/studentProgress/${studentId.trim()}`
+    const progressDoc = await db.doc(location).get();
+    const progressData = progressDoc.exists ? progressDoc.data() : null;
+    const questions = progressData?.questions || [];
+
+    for (const question of questions) {
+      const qId = question?.questionId || null
+      if (qId) {
+        const questionDoc = await db.collection("questions").doc(qId).get();
+        if (!userDoc.exists) console.warn(`Question with id ${qId} not found.`);
+      }
+    }
+    res.json({
+      confidenceLevels: progressData?.confidenceLevels || []
+    });
+
+  } catch (err) {
+    console.error("Error in /getClasses:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 

@@ -21,6 +21,8 @@ function Classes({ user }) {
       try {
         const token = localStorage.getItem('token');
         const classData = await getClasses(token);
+        user.classes = classData;
+        console.log(user.classes)
         if (classData) setClasses(classData);
       } catch (err) {
         console.error('Failed to fetch classes:', err.message);
@@ -28,7 +30,7 @@ function Classes({ user }) {
     };
 
     fetchClasses();
-  }, []);
+  }, [user]);
 
   return (
     <Container sx={{ mt: 4 }}>
@@ -36,7 +38,7 @@ function Classes({ user }) {
         Welcome, {user.name}
       </Typography>
       <Typography variant="h6" gutterBottom>
-        Your Enrolled Classes:
+        Your Classes:
       </Typography>
       <Grid container spacing={3}>
         {classes.map((cls) => (
@@ -59,7 +61,10 @@ function Classes({ user }) {
                 </Box>
               </CardContent>
               <CardActions>
-                <Link to={`/class/${cls.id}`} style={{ textDecoration: 'none' }}>
+                <Link to={
+                  user.role == 'teacher' 
+                  ? `/teacherview/${cls.id}` 
+                  : `/class/${cls.id}`} style={{ textDecoration: 'none' }}>
                   <Button size="small" variant="contained">Study</Button>
                 </Link>
               </CardActions>
