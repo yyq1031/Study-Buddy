@@ -1,23 +1,22 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import * as faceapi from 'face-api.js';
 
-function LessonPage() {
-  const { classId, lessonId } = useParams();
-  const navigate = useNavigate();
-  const videoRef = useRef();
+function Transcript() {
   const webcamRef = useRef();
-  const [isDistracted, setIsDistracted] = useState(false);
   const [expression, setExpression] = useState('');
   const [expressionLog, setExpressionLog] = useState([]);
-  const [videoFinished, setVideoFinished] = useState(false);
   const [webcamStream, setWebcamStream] = useState(null);
-  const distractionCounter = useRef(0);
+  const [transcript, setTranscript] = useState('');
+  const [audioUrl, setAudioUrl] = useState('');
+  const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
+  const [transcriptionComplete, setTranscriptionComplete] = useState(false);
+  const navigate = useNavigate();
   const intervalId = useRef(null);
 
   useEffect(() => {
-    const loadModelsAndStart = async () => {
-      const MODEL_URL = '/models';
+    const MODEL_URL = '/models';
+    const loadModels = async () => {
       try {
         await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
         await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
@@ -28,8 +27,18 @@ function LessonPage() {
       }
     };
 
-    loadModelsAndStart();
-    return () => clearInterval(intervalId.current);
+    loadModels();
+
+    const onScroll = () => {
+      const atBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 20;
+      setIsScrolledToBottom(atBottom);
+    };
+    window.addEventListener('scroll', onScroll);
+
+    return () => {
+      clearInterval(intervalId.current);
+      window.removeEventListener('scroll', onScroll);
+    };
   }, []);
 
   const startWebcam = async () => {
@@ -60,16 +69,7 @@ function LessonPage() {
         .detectSingleFace(webcamRef.current, new faceapi.TinyFaceDetectorOptions())
         .withFaceExpressions();
 
-      if (!detection) {
-        setIsDistracted(true);
-        distractionCounter.current += 1;
-        if (distractionCounter.current >= 3 && videoRef.current && !videoRef.current.paused) {
-          videoRef.current.pause();
-        }
-      } else {
-        setIsDistracted(false);
-        distractionCounter.current = 0;
-
+      if (detection) {
         const expressions = detection.expressions;
         const sorted = Object.entries(expressions)
           .filter(([_, val]) => val > 0.1)
@@ -78,22 +78,39 @@ function LessonPage() {
         if (sorted.length > 0) {
           const top = sorted[0][0];
           setExpression(top);
-          setExpressionLog((prev) => [...prev, top]);
+          setExpressionLog(prev => [...prev, top]);
         }
       }
     }, 2000);
   };
 
-  const handleVideoEnded = () => {
-    setVideoFinished(true);
-    const summary = expressionLog.reduce((acc, exp) => {
-      acc[exp] = (acc[exp] || 0) + 1;
-      return acc;
-    }, {});
+  const handleSubmitUrl = async () => {
+    if (!audioUrl) {
+      alert("Please enter an audio/video URL.");
+      return;
+    }
 
-    console.log("Final expression log:", expressionLog);
-    alert("Lesson complete! Expression summary:\n" + JSON.stringify(summary, null, 2));
+    try {
+      const response = await fetch("http://localhost:5001/api/transcript-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audioUrl })
+      });
+
+      const data = await response.json();
+      if (data.transcript) {
+        setTranscript(data.transcript);
+        setTranscriptionComplete(true);
+      } else {
+        alert("Transcription failed. Please check your URL or try again.");
+      }
+    } catch (err) {
+      console.error("Transcription error:", err);
+      alert("Something went wrong while fetching the transcript.");
+    }
   };
+
+  const canProceed = transcriptionComplete && isScrolledToBottom;
 
   const buttonStyle = {
     padding: "10px 24px",
@@ -120,75 +137,91 @@ function LessonPage() {
 
   return (
     <div style={{ padding: '20px' }}>
-      <div>
-        <h2 style={{ display: 'inline-block', marginRight: '20px' }}>Lesson: {lessonId} (Class {classId})</h2>
+      <h2>Transcription + Emotion Detection</h2>
+
+      <div style={{ marginTop: '20px' }}>
+        <label>
+          Paste Audio/Video URL:
+          <input
+            type="text"
+            value={audioUrl}
+            onChange={(e) => setAudioUrl(e.target.value)}
+            placeholder="https://example.com/audio.mp3"
+            style={{ width: '100%', padding: '10px', marginTop: '10px' }}
+          />
+        </label>
+        <button
+          onClick={handleSubmitUrl}
+          style={{
+            marginTop: '15px',
+            padding: '10px 20px',
+            backgroundColor: '#007bff',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          Transcribe
+        </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-        <div>
-          <h3>Lecture Video</h3>
-          <video
-            ref={videoRef}
-            controls
-            width="500"
-            src="https://www.w3schools.com/html/mov_bbb.mp4"
-            onEnded={handleVideoEnded}
-          />
+      <div style={{ marginTop: '30px' }}>
+        <h3>Transcript:</h3>
+        <p style={{ whiteSpace: 'pre-wrap', background: '#f1f1f1', padding: '10px', borderRadius: '5px' }}>
+          {transcript}
+        </p>
+      </div>
 
-          <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "20px" }}>
-            <button
-              onClick={() => {
-                stopWebcam();
-                alert("Previous clicked");
-              }}
-              style={buttonStyle}
-            >
-              Previous
-            </button>
+      <div style={{ marginTop: '30px' }}>
+        <h3>Live Emotion Detection</h3>
+        <video
+          ref={webcamRef}
+          autoPlay
+          muted
+          width="300"
+          style={{ border: '2px solid #ccc', borderRadius: '8px' }}
+        />
+        {expression && (
+          <p><strong>Detected Emotion:</strong> {expression}</p>
+        )}
+      </div>
 
-            <button
-              onClick={() => {
-                stopWebcam();
-                navigate('/quiz');
-              }}
-              style={videoFinished ? greenButtonStyle : disabledButtonStyle}
-              disabled={!videoFinished}
-            >
-              Take Quiz
-            </button>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "30px" }}>
+        <button
+          onClick={() => {
+            stopWebcam();
+            alert("Previous clicked");
+          }}
+          style={buttonStyle}
+        >
+          Previous
+        </button>
 
-            <button
-              onClick={() => {
-                stopWebcam();
-                alert("Next clicked");
-              }}
-              style={videoFinished ? buttonStyle : disabledButtonStyle}
-              disabled={!videoFinished}
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        <button
+          onClick={() => {
+            stopWebcam();
+            navigate('/quiz');
+          }}
+          style={canProceed ? greenButtonStyle : disabledButtonStyle}
+          disabled={!canProceed}
+        >
+          Take Quiz
+        </button>
 
-        <div>
-          <h3>Your Webcam (Live)</h3>
-          <video
-            ref={webcamRef}
-            autoPlay
-            muted
-            width="300"
-            style={{ border: '2px solid #ccc', borderRadius: '8px' }}
-          />
-          <p style={{ color: isDistracted ? 'red' : 'green' }}>
-            {isDistracted ? 'You seem distracted!' : 'Focus detected!'}
-          </p>
-          {expression && !isDistracted && (
-            <p><strong>Detected Emotion:</strong> {expression}</p>
-          )}
-        </div>
+        <button
+          onClick={() => {
+            stopWebcam();
+            alert("Next clicked");
+          }}
+          style={canProceed ? buttonStyle : disabledButtonStyle}
+          disabled={!canProceed}
+        >
+          Next
+        </button>
       </div>
     </div>
   );
 }
 
-export default LessonPage;
+export default Transcript;
