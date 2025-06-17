@@ -34,3 +34,5 @@ You need to set up a .env file in the root directory.
     After the dashboard is loaded, find the AI keys generation on the left navigation bar.
 
     🔐 Note: Do not commit your .env file to version control.
+    
+Demo Video can be found on: https://www.youtube.com/watch?v=7s5WBDwzroc
