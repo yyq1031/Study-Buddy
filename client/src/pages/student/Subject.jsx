@@ -38,17 +38,14 @@ function Subject({ user }) {
     // Fetch actual progress from backend
     async function fetchProgress() {
       try {
-        const data = await getStudentClassProgress(classId, user.id, token);
-        console.log(user);
-        console.log(data)
+        const data = await getStudentClassProgress(classId, token);
         setProgress({
           completed: data.completedLessons,
           total: data.totalLessons,
         });
         setRecommended({
-          type: 'Quiz',
-          title: data.nextRecommendedActivity?.title || 'No activity',
-          lessonId: data.nextRecommendedActivity?.lessonId,
+          title: data.nextLesson?.name || 'No activity',
+          lessonId: data.nextLesson?.id,
         });
       } catch (err) {
         console.error('Failed to load progress:', err);
@@ -57,9 +54,7 @@ function Subject({ user }) {
 
     fetchProgress();
   }, [classId, user]);
-
-
-
+  
   useEffect(() => {
     // Find the class info based on classId
     const foundClass = user?.classes.find(cls => String(cls.id) === classId);
@@ -113,7 +108,9 @@ function Subject({ user }) {
         <Card variant="outlined" className="shadow-md w-full lg:w-1/2">
           <CardActionArea
             onClick={() =>
-              navigate(`/class/${classId}/lesson/${recommended?.lessonId}`)
+              navigate(recommended?.lessonId 
+                ? `/class/${classId}/lesson/${recommended?.lessonId}`
+                : `/class/${classId}`)
             }
           >
             {recommended && (
@@ -130,7 +127,7 @@ function Subject({ user }) {
               </Typography>
               {recommended ? (
                 <Typography>
-                  {recommended.type}: <strong>{recommended.title}</strong>
+                  <strong>{recommended.title}</strong>
                 </Typography>
               ) : (
                 <Typography color="textSecondary">Loading...</Typography>

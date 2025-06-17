@@ -7,7 +7,7 @@ export const signup_api = `${base}/singup`;
 export const getprofile_api = `${base}/getprofile`
 export const getclasses_api = `${base}/getClasses`
 
-export const signUp = async (email, password) => {
+export const signUp = async (name, email, password) => {
   const auth = getAuth(app);
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -18,7 +18,7 @@ export const signUp = async (email, password) => {
         'Authorization': `Bearer ${idToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ name, email }),
     });
     
     if (!response.ok) {
@@ -134,9 +134,9 @@ export const addStudentToClass = async (classId, studentId) => {
   return data;
 }
 
-export const getStudentClassProgress = async (classId, studentId, idToken) => {
+export const getStudentClassProgress = async (classId, idToken) => {
   try {
-    const response = await fetch(`${base}/getStudentClassProgress/${classId}/${studentId}`, {
+    const response = await fetch(`${base}/getStudentClassProgress/${classId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${idToken}`,

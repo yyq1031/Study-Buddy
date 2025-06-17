@@ -16,22 +16,28 @@ import { getClasses } from '../../api';
 
 function Classes({ user }) {
   useEffect(() => {
-    getClasses(localStorage.getItem('token'));
-    console.log(user);
-  })
-  
-  // get classes of user from backend
-  user.classes = [
-    { id: 1, name: "Math 101", latestLesson: "Derivatives", latestLessonId: "derivatives" },
-    { id: 2, name: "Chemistry", latestLesson: "Acids and Bases", latestLessonId: "acids-bases" }
-  ]
+    const fetchClasses = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const classData = await getClasses(token);
+        user.classes = classData;
+        console.log(user.classes)
+        if (classData) setClasses(classData);
+      } catch (err) {
+        console.error('Failed to fetch classes:', err.message);
+      }
+    };
+
+    fetchClasses();
+  }, [user]);
+
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
         Welcome, {user.name}
       </Typography>
       <Typography variant="h6" gutterBottom>
-        Your Enrolled Classes:
+        Your Classes:
       </Typography>
       <Grid container spacing={3}>
         {user.classes.map((cls) => (
@@ -53,7 +59,10 @@ function Classes({ user }) {
                 </Box>
               </CardContent>
               <CardActions>
-                <Link to={`/class/${cls.id}`} style={{ textDecoration: 'none' }}>
+                <Link to={
+                  user.role == 'teacher' 
+                  ? `/teacherview/${cls.id}` 
+                  : `/class/${cls.id}`} style={{ textDecoration: 'none' }}>
                   <Button size="small" variant="contained">Study</Button>
                 </Link>
               </CardActions>

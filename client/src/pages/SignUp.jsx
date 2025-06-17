@@ -5,7 +5,6 @@ import {
   Button,
   Checkbox,
   CssBaseline,
-  Divider,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -16,6 +15,7 @@ import {
   Card,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { signUp } from '../api';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   display: 'flex',
@@ -63,16 +63,19 @@ export default function SignUp() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateInputs()) return;
 
     const data = new FormData(e.currentTarget);
-    console.log({
-      name: data.get('name'),
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+    const name = data.get('name');
+    const email = data.get('email');
+    const password = data.get('password');
+    if (name && email && password) {
+      const {token, userData} = await signUp(name, email, password);
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
 
     alert("Signed up successfully!");
   };
