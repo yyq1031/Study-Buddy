@@ -88,6 +88,28 @@ export const getClasses = async (idToken) => {
   }
 }
 
+export const getQuestions = async (idToken, lessonId) => {
+  try {
+    const response = await fetch(`${base}/getLesson/${lessonId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${idToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Server error: ${response.status} - ${text}`);
+    }
+    const data = await response.json();
+    return data;
+
+  } catch (error) {
+    console.error("error:", error.message);
+  }
+}
+
 export const addClass = async (className, isActive) => {
   const response = await fetch(`${base}/createClass`, {
       method: 'POST',
@@ -154,5 +176,29 @@ export const getStudentClassProgress = async (classId, idToken) => {
 
   } catch (error) {
     console.error("Error fetching student class progress:", error.message);
+  }
+};
+
+export const updateQuizScore = async (quizes, confidenceLevels, lessonId, idToken) => {
+  try {
+    const response = await fetch(`${base}/updateProgress/${lessonId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${idToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ quizes, confidenceLevels }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Server error: ${response.status} - ${text}`);
+    }
+
+    const data = await response.json();
+    return data;
+
+  } catch (error) {
+    console.error("Error updating quiz score:", error.message);
   }
 };
