@@ -18,6 +18,7 @@ import PreferencePage from './pages/student/Preference';
 import Transcript from './pages/student/Transcript';
 import Assignment from './pages/student/Assignment';
 import AddClass from './pages/Teacher/AddClass';
+import SignUp from './pages/SignUp';
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -40,6 +41,7 @@ function App() {
         <Route path='/' element={<Home />} />
         <Route path='/about' element={<About/>} />
         <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
         <Route path='/dashboard' element={<Dashboard /> }/>
         <Route path='/teacheruploadinterace' element={<TeacherUploadInterface /> }/>
         <Route path='/lessons' element={<LessonPage /> }/> 
