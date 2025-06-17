@@ -14,6 +14,15 @@ function LessonPage() {
   const [webcamStream, setWebcamStream] = useState(null);
   const distractionCounter = useRef(0);
   const intervalId = useRef(null);
+  const [currentClass, setCurrentClass] = useState(null);
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("user"));
+    if (userData?.classes) {
+      const found = userData.classes.find(cls => cls.id === classId);
+      setCurrentClass(found);
+    }
+  }, [classId]);
 
   useEffect(() => {
     const loadModelsAndStart = async () => {
@@ -121,7 +130,10 @@ function LessonPage() {
   return (
     <div style={{ padding: '20px' }}>
       <div>
-        <h2 style={{ display: 'inline-block', marginRight: '20px' }}>Lesson: {lessonId} (Class {classId})</h2>
+        {/* <h2 style={{ display: 'inline-block', marginRight: '20px' }}>Lesson: {lessonId} (Class {classId})</h2> */}
+        <h2 style={{ display: 'inline-block', marginRight: '20px' }}>
+          Lesson: {currentClass ? `(${currentClass.name})` : `(Class ${classId})`}
+        </h2>
       </div>
 
       <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
@@ -139,7 +151,7 @@ function LessonPage() {
             <button
               onClick={() => {
                 stopWebcam();
-                alert("Previous clicked");
+                alert("This is the first video!");
               }}
               style={buttonStyle}
             >
@@ -160,7 +172,7 @@ function LessonPage() {
             <button
               onClick={() => {
                 stopWebcam();
-                alert("Next clicked");
+                alert("This is the last video!");
               }}
               style={videoFinished ? buttonStyle : disabledButtonStyle}
               disabled={!videoFinished}

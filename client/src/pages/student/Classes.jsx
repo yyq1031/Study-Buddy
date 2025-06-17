@@ -15,6 +15,7 @@ import { useEffect } from 'react';
 import { getClasses } from '../../api';
 
 function Classes({ user }) {
+  //const savedUser = JSON.parse(localStorage.getItem('user'));
   const [classes, setClasses] = useState([]);
 
   useEffect(() => {
@@ -62,7 +63,7 @@ function Classes({ user }) {
               </CardContent>
               <CardActions>
                 { user.role == 'teacher' 
-                ? <Link to={`/teacherview/${cls.id}`} style={{ textDecoration: 'none' }}>
+                ? <Link to={`dashboard/teacherview/${cls.id}`} style={{ textDecoration: 'none' }}>
                   <Button size="small" variant="contained">View Class</Button>
                 </Link>
                 : <Link to={`/class/${cls.id}`} style={{ textDecoration: 'none' }}>

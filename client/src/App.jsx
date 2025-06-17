@@ -19,6 +19,7 @@ import Transcript from './pages/student/Transcript';
 import Assignment from './pages/student/Assignment';
 import AddClass from './pages/Teacher/AddClass';
 import SignUp from './pages/SignUp';
+import TeacherClassDashboard from './pages/Teacher/TeacherView';
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -74,6 +75,7 @@ function App() {
         />
         <Route path="/editClasses" element={<AddClass />} />
         <Route path="/test" element={<AddClass />} />
+        <Route path='/dashboard/teacherview' element={<TeacherClassDashboard /> }/>
       </Routes>
     </Router>
   );
