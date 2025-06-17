@@ -45,29 +45,12 @@ app.get('/api/hello', (req, res) => {
 // AssemblyAI API 
 const client = new AssemblyAI({ apiKey: process.env.ASSEMBLYAI_API_KEY });
 
-app.post('/api/transcript-dynamic', async (req, res) => {
-  console.log("Received request body:", req.body);
-  const { classId, lessonId } = req.body;
-
-  try {
-    const lesson = await ClassModel.findOne({
-      classId,
-      lessonId,
-      type: "lesson"
-    });
-
-    const audioUrl = lesson?.content || "https://storage.googleapis.com/aai-web-samples/espn-bears.mp3";
-
-    const transcript = await client.transcripts.transcribe({
-      audio: audioUrl,
-      speech_model: "universal"
-    });
-
-    res.json({ transcript: transcript.text, sourceUrl: audioUrl });
-  } catch (err) {
-    console.error("Dynamic transcription error:", err);
-    res.status(500).json({ error: "Failed to transcribe dynamic lesson" });
-  }
+await fetch("http://localhost:5001/api/transcript-url", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ audioUrl: "https://your-public-audio-url.mp3" })
 });
 
 
