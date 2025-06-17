@@ -5,11 +5,9 @@ To set up the project and assuming npm is installed correctly, run these command
 ```bash
 git clone git@github.com:yyq1031/Lifehack.git
 npm install
-npm install recharts
 
 cd server
 npm install
-npm install assemblyai
 cd ..
 
 cd client
@@ -34,5 +32,20 @@ You need to set up a .env file in the root directory.
     After the dashboard is loaded, find the AI keys generation on the left navigation bar.
 
     🔐 Note: Do not commit your .env file to version control.
+Create and place the firebaseAdmin.js file containing the following info in server:
+    ```
+    const admin = require("firebase-admin");
+    const serviceAccount = require("./firebase-server-account.json");
+
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+      });
+    }
+
+    const db = admin.firestore();
+
+    module.exports = { admin, db };
+    ```
     
 Demo Video can be found on: https://www.youtube.com/watch?v=7s5WBDwzroc
