@@ -41,7 +41,6 @@ function App() {
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/about' element={<About/>} />
-        <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path='/dashboard' element={<Dashboard /> }/>
         <Route path='/teacheruploadinterace' element={<TeacherUploadInterface /> }/>
@@ -62,7 +61,10 @@ function App() {
         <Route path="/classes" element={<ClassesPage user={user} />} />
         <Route path="/class/:classId/lesson/:lessonId/video" element={<LessonPage />} />
         <Route path="/class/:classId/lesson/:lessonId/transcript" element={<Transcript />} />
-        <Route path="/signout" onSignIn={() => {setUser(user)}}
+        <Route path="/signout" onSignIn={() => {
+          setUser(user);
+          localStorage.removeItem('user');
+        }}
         element={<SignOut />} />
         <Route path="/:classId/:lessonId/video" element={<Quiz />} />
         <Route path="/:classId/:lessonId/text" element={<Quiz />} />
