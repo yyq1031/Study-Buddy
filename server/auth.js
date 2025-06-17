@@ -21,15 +21,31 @@ async function fetchDetailedClasses(classInfoList) {
       continue; // Skip this entry
     }
 
-    const docSnap = await db.collection("classes").doc(classId).get();
+    let allLessonDetails = []
+    const docSnap = await db.collection("classes").doc(classId.trim()).get();
     if (!docSnap.exists) {
       console.warn(`Class with id ${classId} not found`);
       continue;
+    } else {
+      const lessonIds = docSnap.data()?.lessons || [];
+      for (const lId of lessonIds) {
+        const lessonDocSnap = await db.collection("lessons").doc(lId.trim()).get();
+        if (lessonDocSnap.exists) {
+          const lessonInfo = {
+            id: lId,
+            ...lessonDocSnap.data(),
+          };
+          allLessonDetails.push(lessonInfo);
+        } else {
+          console.warn(`Lesson with id ${lId} not found`);
+        }
+      }
     }
+
 
     let nextLessonInfo = null;
     if (nextLessonId && nextLessonId.trim() !== "") {
-      const lessonDocSnap = await db.collection("lessons").doc(nextLessonId).get();
+      const lessonDocSnap = await db.collection("lessons").doc(nextLessonId.trim()).get();
       if (lessonDocSnap.exists) {
         nextLessonInfo = {
           id: nextLessonId,
@@ -43,7 +59,8 @@ async function fetchDetailedClasses(classInfoList) {
     detailedClasses.push({
       id: docSnap.id,
       ...docSnap.data(),
-      nextLesson: nextLessonInfo
+      allLessonDetails: allLessonDetails,
+      nextLesson: nextLessonInfo,
     });
   }
 
@@ -61,7 +78,7 @@ router.post("/getprofile", authenticate, async (req, res) => {
       userData = result.data;
     } catch (err) {
       if (err.message.includes("users not found")) {
-        const userDocRef = db.collection("users").doc(uid);
+        const userDocRef = db.collection("users").doc(uid.trim());
         const newUser = {
           name: req.body.name || "Jane Doe",
           email: req.body.email || "",
@@ -89,7 +106,7 @@ router.post("/getprofile", authenticate, async (req, res) => {
 router.get("/getClasses", authenticate, async (req, res) => {
   try {
     const uid = req.user.uid;
-    const userDoc = await db.collection("users").doc(uid).get();
+    const userDoc = await db.collection("users").doc(uid.trim()).get();
     if (!userDoc.exists) return res.status(404).json({ message: "User data not found" });
 
     // const classIds = userDoc.data()?.classes || [];
@@ -105,32 +122,11 @@ router.get("/getClasses", authenticate, async (req, res) => {
   }
 });
 
-// GET /getClassesStudent/:studentId - get classes for a student (teacher access)
-router.get("/getClassesStudent/:studentId", authenticate, requireRole("teacher"), async (req, res) => {
-  try {
-    const uid = req.user.uid;
-    const userDoc = await db.collection("users").doc(uid).get();
-    if (!userDoc.exists) return res.status(404).json({ message: "User data not found" });
-
-    const { studentId } = req.params;
-    const studentDoc = await db.collection("users").doc(studentId).get();
-    if (!studentDoc.exists) return res.status(404).json({ message: "Student not found" });
-
-    const classIds = studentDoc.data()?.classes || [];
-    const detailedClasses = await fetchDetailedClasses(classIds);
-
-    res.json(detailedClasses);
-  } catch (err) {
-    console.error("Error in /getClassesStudent:", err);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-
 // POST /createClass - teacher creates new class
 router.post("/createClass", authenticate, async (req, res) => {
   try {
     const uid = req.user.uid;
-    const userDocRef = db.collection("users").doc(uid);
+    const userDocRef = db.collection("users").doc(uid.trim());
     const userDoc = await userDocRef.get();
 
     if (userDoc.data()?.role !== "teacher") {
@@ -167,7 +163,7 @@ router.post("/createClass", authenticate, async (req, res) => {
 router.post("/assignStudentToClass/:classId/:studentId", authenticate, async (req, res) => {
   try {
     const uid = req.user.uid;
-    const userDoc = await db.collection("users").doc(uid).get();
+    const userDoc = await db.collection("users").doc(uid.trim()).get();
 
     if (!userDoc.exists || userDoc.data()?.role !== "teacher") {
       return res.status(401).json({ message: "Only teachers can assign students" });
@@ -176,7 +172,7 @@ router.post("/assignStudentToClass/:classId/:studentId", authenticate, async (re
     const { classId, studentId } = req.params;
 
     // Fetch class
-    const classDocRef = db.collection("classes").doc(classId);
+    const classDocRef = db.collection("classes").doc(classId.trim());
     const classDoc = await classDocRef.get();
     if (!classDoc.exists) {
       return res.status(404).json({ message: "Class not found" });
@@ -190,7 +186,7 @@ router.post("/assignStudentToClass/:classId/:studentId", authenticate, async (re
     }
 
     // Fetch student
-    const studentDocRef = db.collection("users").doc(studentId);
+    const studentDocRef = db.collection("users").doc(studentId.trim());
     const studentDoc = await studentDocRef.get();
     if (!studentDoc.exists) {
       return res.status(404).json({ message: "Student not found" });
@@ -220,23 +216,6 @@ router.post("/assignStudentToClass/:classId/:studentId", authenticate, async (re
   }
 });
 
-// GET /getAllProgress/:classId/:lessonId - get all students' progress for a lesson (teacher only)
-router.get("/getAllProgress/:classId/:lessonId", authenticate, requireRole("teacher"), async (req, res) => {
-  try {
-    const { classId, lessonId } = req.params;
-    const progressCollection = db.collection(`progress/${classId}_${lessonId}/studentProgress`);
-    const snapshot = await progressCollection.get();
-
-    const allProgress = [];
-    snapshot.forEach(doc => allProgress.push({ studentId: doc.id, ...doc.data() }));
-
-    res.json(allProgress);
-  } catch (err) {
-    console.error("Error in /getAllProgress:", err);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-
 // GET /getStudentProgress/:classId/:lessonId - get student's own progress
 router.get("/getStudentProgress/:classId/:lessonId", authenticate, async (req, res) => {
   try {
@@ -256,14 +235,17 @@ router.get("/getStudentProgress/:classId/:lessonId", authenticate, async (req, r
   }
 });
 
-// POST /updateProgress/:classId/:lessonId - update student's progress
-router.post("/updateProgress/:classId/:lessonId", authenticate, async (req, res) => {
+// POST /updateProgress/:lessonId - update student's progress
+router.post("/updateProgress/:lessonId", authenticate, async (req, res) => {
   try {
-    const { classId, lessonId } = req.params;
+    const lessonId = req.params.lessonId.trim();
+    if (!lessonId || typeof lessonId !== "string" || lessonId.includes("/")) {
+      return res.status(400).json({ message: "Invalid lessonId" });
+    }
     const studentId = req.user.uid;
     const { quizes = [], confidenceLevels = {} } = req.body;
 
-    const progressRef = db.collection(`progress/${classId}_${lessonId}/studentProgress`).doc(studentId);
+    const progressRef = db.collection(`progress/${lessonId.trim()}/studentProgress`).doc(studentId.trim());
     const progressDoc = await progressRef.get();
 
     const previousData = progressDoc.exists ? progressDoc.data() : {};
@@ -330,7 +312,7 @@ router.get('/getStudentClassProgress/:classId', authenticate, async (req, res) =
     // }
 
     // Get class lessons
-    const classDoc = await db.collection('classes').doc(classId).get();
+    const classDoc = await db.collection('classes').doc(classId.trim()).get();
     if (!classDoc.exists) return res.status(404).json({ message: 'Class not found' });
     const lessons = classDoc.data().lessons || [];
 
@@ -364,7 +346,7 @@ router.get('/getStudentClassProgress/:classId', authenticate, async (req, res) =
       });
     }
 
-    const userDoc = await db.collection("users").doc(studentId).get();
+    const userDoc = await db.collection("users").doc(studentId.trim()).get();
     if (!userDoc.exists) return res.status(404).json({ message: "User data not found" });
     const classInfoList = userDoc.data()?.classes || [];
 
@@ -376,7 +358,7 @@ router.get('/getStudentClassProgress/:classId', authenticate, async (req, res) =
       }
       const nextLessonId = map["lessonId"];
       if (nextLessonId && nextLessonId.trim() !== "") {
-        const lessonDocSnap = await db.collection("lessons").doc(nextLessonId).get();
+        const lessonDocSnap = await db.collection("lessons").doc(nextLessonId.trim()).get();
         if (lessonDocSnap.exists) {
           nextLessonInfo = {
             id: nextLessonId,
@@ -405,10 +387,10 @@ router.get('/getStudentClassProgress/:classId', authenticate, async (req, res) =
 // GET /getLesson - get all questions and user details of the lesson 
 router.get("/getLesson/:lessonId", authenticate, requireRole("student"), async (req, res) => {
   try {
-    const { lessonId } = req.params;
+    const lessonId = req.params.lessonId.trim();
     const studentId = req.user.uid;
 
-    const lessonDocSnap = await db.collection("lessons").doc(lessonId).get();
+    const lessonDocSnap = await db.collection("lessons").doc(lessonId.trim()).get();
     if (!lessonDocSnap.exists) {
       return res.status(404).json({ message: "Lesson not found" });
     }
@@ -433,7 +415,7 @@ router.get("/getLesson/:lessonId", authenticate, requireRole("student"), async (
 
     const questionDetails = [];
     for (const qId of questionIds) {
-      const questionDoc = await db.collection("questions").doc(qId).get();
+      const questionDoc = await db.collection("questions").doc(qId.trim()).get();
       if (!questionDoc.exists) {
         console.warn(`Question with id ${qId} not found`);
         continue;
@@ -454,6 +436,111 @@ router.get("/getLesson/:lessonId", authenticate, requireRole("student"), async (
 
   } catch (err) {
     console.error("Error in /getLesson:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// GET /getClassAndLessons - return classes and lesson ids/names
+router.get("/getClassAndLessons", authenticate, async (req, res) => {
+  try {
+    const uid = req.user.uid;
+    const userDoc = await db.collection("users").doc(uid.trim()).get();
+    if (!userDoc.exists) return res.status(404).json({ message: "User not found" });
+
+    const classInfoList = userDoc.data()?.classes || [];
+    const result = [];
+
+    for (const entry of classInfoList) {
+      const classId = entry.classId;
+      if (classId == undefined) {
+        continue
+      }
+      const classDoc = await db.collection("classes").doc(classId.trim()).get();
+      if (!classDoc.exists) continue;
+
+      const classData = classDoc.data();
+      const lessonIds = classData.lessons || [];
+      
+      const detailedLessons = [];
+
+      for (const lessonId of lessonIds) {
+        console.log(lessonId)
+        const lessonDoc = await db.collection("lessons").doc(lessonId.trim()).get();
+        if (lessonDoc.exists) {
+          const lessonData = lessonDoc.data();
+          detailedLessons.push({
+            id: lessonId,
+            name: lessonData.name || "Unnamed Lesson",
+            ...lessonData,
+          });
+        }
+      }
+
+      // const { detailedLessons: _, ...restClassData } = classData;
+      result.push({
+        id: classId,
+        name: classData.name || "Unnamed Class",
+        detailedLessons: detailedLessons,
+        ... classData,
+      });
+    }
+
+    res.json(result);
+
+  } catch (err) {
+    console.error("Error in /getClassAndLessons:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// POST /createQuestion - create a new question (e.g., teacher only)
+router.post("/createQuestion/:lessonId", authenticate, requireRole("teacher"), async (req, res) => {
+  try {
+    const lessonId = req.params.lessonId.trim();
+
+    const {
+      question,
+      options,
+      correctAnswer,
+      explanation,
+      tag,
+    } = req.body;
+
+    // Create question object
+    const newQuestion = {
+      contents: {
+        answer: correctAnswer,
+        explanation: text,
+        options: options,
+        question: question,
+      },
+      difficulty: "easy",
+      type: type,
+      tags: tags,
+      lessonId: lessonId,
+    };
+
+    // Add to Firestore
+    const questionRef = await db.collection("questions").add(newQuestion);
+
+    // Optionally associate question with a lesson
+    if (lessonId) {
+      const lessonRef = db.collection("lessons").doc(lessonId.trim());
+      const lessonDoc = await lessonRef.get();
+
+      if (!lessonDoc.exists) {
+        return res.status(404).json({ message: "Lesson not found" });
+      }
+
+      const lessonQuestions = lessonDoc.data().questions || [];
+      lessonQuestions.push(questionRef.id);
+      await lessonRef.update({ questions: lessonQuestions });
+    }
+
+    res.json({ message: "Question created", questionId: questionRef.id });
+
+  } catch (err) {
+    console.error("Error in /createQuestion:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });

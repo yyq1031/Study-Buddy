@@ -19,21 +19,23 @@ import { Link } from 'react-router-dom';
 const drawerWidth = 240;
 
 function NavigationBar(props) {
-  const savedUser = JSON.parse(localStorage.getItem('user'));
+  let savedUser = null;
+  if (localStorage.getItem('user') != null) {
+    savedUser = JSON.parse(localStorage.getItem('user'));
+  }
+  
   const navItems = [
       {name: 'Home', link: ''},
       {name: 'About', link: '/about'},
       {name: 'test', link: '/test'},
   ];
-  console.log(savedUser);
   if (savedUser && savedUser.role) {
     if (savedUser?.role == "teacher") {
       navItems.push({name: 'Dashboard', link: '/dashboard'})
       navItems.push({name: 'Upload', link: '/teacheruploadinterace'})
       navItems.push({name: 'Edit Classes', link: '/editClasses'})
-    } else {
-      navItems.push({name: 'Classes', link: '/classes'})
-    }
+    } 
+    navItems.push({name: 'Classes', link: '/classes'})
   } 
   navItems.push({name: 'Sign In', link: '/signin'})
   navItems.push({name: 'Sign Out', link: '/signout'})

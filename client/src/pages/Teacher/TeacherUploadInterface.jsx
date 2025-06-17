@@ -21,6 +21,7 @@ import {
   Grid,
   Divider,
   IconButton,
+  Autocomplete,
 } from "@mui/material";
 import {
   CloudUpload,
@@ -31,22 +32,50 @@ import {
   Visibility,
   Save,
 } from "@mui/icons-material";
+import { getClassLessonIds } from "../../api";
+import { useEffect } from "react";
 
 const TeacherUploadInterface = () => {
   // Predefined topic options
   const topicOptions = "Lesson 1";
   const [materialType, setMaterialType] = useState("");
   const [topicTag, setTopicTag] = useState(topicOptions);
-  const [modality, setModality] = useState("");
   const [uploadedFile, setUploadedFile] = useState(null);
   const [quizData, setQuizData] = useState({
-    questions: [{ question: "", options: ["", "", "", ""], correctAnswer: 0 }],
+    questions: [{ question: "", options: ["", "", "", ""], correctAnswer: 0, explanation: ""}],
   });
   const [textContent, setTextContent] = useState("");
-  const [materialTitle, setMaterialTitle] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [materials, setMaterials] = useState([]);
+
+  const [classes, setClasses] = useState([]);
+  const [selectedClass, setSelectedClass] = useState("");
+  const [lessons, setLessons] = useState([]);
+  
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const classData = await getClassLessonIds(token);
+        // user.classes = classData;
+        console.log(classData)
+        if (classData) setClasses(classData);
+      } catch (err) {
+        console.error('Failed to fetch classes:', err.message);
+      }
+    };
+    fetchClasses();
+  }, []);
+  
+  useEffect(() => {
+    if (selectedClass) {
+      const cls = classes.find((c) => c.id === selectedClass);
+      if (cls) setLessons(cls.lessons);
+    } else {
+      setLessons([]);
+    }
+  }, [selectedClass, classes]);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -64,12 +93,14 @@ const TeacherUploadInterface = () => {
       updatedQuestions[index].options[optionIndex] = value;
     } else if (field === "correctAnswer") {
       updatedQuestions[index].correctAnswer = parseInt(value);
+    } else {
+      updatedQuestions[index].explanation = value;
     }
     setQuizData({ ...quizData, questions: updatedQuestions });
   };
 
   const handleSubmit = async () => {
-    if (!materialType || !topicTag || !modality) {
+    if (!materialType || !topicTag) {
       alert("Please fill in all required fields");
       return;
     }
@@ -85,9 +116,7 @@ const TeacherUploadInterface = () => {
         id: Date.now().toString(),
         type: materialType,
         topic: topicTag,
-        modality: modality,
-        uploadDate: new Date().toISOString(),
-        title: materialTitle,
+        // uploadDate: new Date().toISOString(),
         content: null,
       };
 
@@ -126,14 +155,12 @@ const TeacherUploadInterface = () => {
 
   const resetForm = () => {
     setMaterialType("");
-    setModality("");
     setUploadedFile(null);
     setQuizData({
       questions: [
-        { question: "", options: ["", "", "", ""], correctAnswer: 0 },
+        { question: "", options: ["", "", "", ""], correctAnswer: 0 , explanation: ""},
       ],
     });
-    setMaterialTitle("");
     setTextContent("");
   };
 
@@ -151,7 +178,7 @@ const TeacherUploadInterface = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, margin: "0 auto", padding: 3 }}>
+    <Box sx={{ maxWidth: 960, mx: "auto", px: 2, py: 3 }}>
       <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: "bold" }}>
         Upload Learning Materials
       </Typography>
@@ -169,6 +196,38 @@ const TeacherUploadInterface = () => {
             <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
               Add New Material
             </Typography>
+
+            {/* Select Class */}
+            <FormControl fullWidth sx={{ mb: 3 }}>
+              <InputLabel>Select Class *</InputLabel>
+              <Select
+                value={selectedClass}
+                onChange={(e) => {
+                  setSelectedClass(e.target.value);
+                  setTopicTag(""); // reset selected lesson
+                }}
+                label="Select Class *"
+              >
+                {classes.map((cls) => (
+                  <MenuItem key={cls.id} value={cls.id}>
+                    {cls.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Select Lesson */}
+            <Autocomplete
+              freeSolo
+              disabled={!selectedClass}
+              options={lessons.map((lesson) => lesson.name)}
+              value={topicTag}
+              onInputChange={(event, newValue) => setTopicTag(newValue)}
+              renderInput={(params) => (
+                <TextField {...params} label="Lesson Name *" sx={{ mb: 3 }} />
+              )}
+            />
+
 
             {/* Material Type Selection */}
             <FormControl fullWidth sx={{ mb: 3 }}>
@@ -195,40 +254,6 @@ const TeacherUploadInterface = () => {
                 </MenuItem>
               </Select>
             </FormControl>
-
-            {/* Learning Modality */}
-            <FormControl component="fieldset" sx={{ mb: 3 }}>
-              <FormLabel component="legend">Learning Modality *</FormLabel>
-              <RadioGroup
-                row
-                value={modality}
-                onChange={(e) => setModality(e.target.value)}
-              >
-                <FormControlLabel
-                  value="visual"
-                  control={<Radio />}
-                  label="Visual"
-                />
-                <FormControlLabel
-                  value="auditory"
-                  control={<Radio />}
-                  label="Auditory"
-                />
-                <FormControlLabel
-                  value="kinesthetic"
-                  control={<Radio />}
-                  label="Kinesthetic"
-                />
-              </RadioGroup>
-            </FormControl>
-            {/* Title of Material */}
-            <TextField
-              fullWidth
-              label="Material Title *"
-              value={materialTitle}
-              onChange={(e) => setMaterialTitle(e.target.value)}
-              sx={{ mb: 3 }}
-            />
 
             {/* Content Upload/Creation Area */}
             {materialType && (
@@ -347,6 +372,20 @@ const TeacherUploadInterface = () => {
                               ))}
                             </Select>
                           </FormControl>
+                          <div>
+                          {/* Explanation */}
+                          <TextField
+                            fullWidth
+                            label="Explanation"
+                            value={q.explanation}
+                            onChange={(e) => handleQuizQuestionChange(
+                              index,
+                              "explanation",
+                              e.target.value
+                            )}
+                            sx={{ mb: 3 }}
+                          />
+                          </div>
                         </Card>
                       ))}
                     </Box>
@@ -381,7 +420,7 @@ const TeacherUploadInterface = () => {
                 variant="contained"
                 onClick={handleSubmit}
                 disabled={
-                  isUploading || !materialType || !topicTag || !modality || !materialTitle
+                  isUploading || !materialType || !topicTag
                 }
                 startIcon={isUploading ? null : <Save />}
               >
@@ -424,20 +463,9 @@ const TeacherUploadInterface = () => {
                         {material.type}
                       </Typography>
                     </Box>
-                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-                      {material.title || "Untitled Material"}
-                    </Typography>
                     <Typography variant="body2" sx={{ mb: 1 }}>
                       <strong>Topic:</strong> {material.topic}
                     </Typography>
-
-                    <Chip
-                      size="small"
-                      label={material.modality}
-                      color="primary"
-                      variant="outlined"
-                      sx={{ textTransform: "capitalize" }}
-                    />
 
                     <Typography
                       variant="caption"
