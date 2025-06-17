@@ -1,10 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import * as faceapi from 'face-api.js';
 
 function Transcript() {
   const webcamRef = useRef();
-  const { classId, lessonId } = useParams();
   const [expression, setExpression] = useState('');
   const [expressionLog, setExpressionLog] = useState([]);
   const [webcamStream, setWebcamStream] = useState(null);
@@ -41,28 +40,6 @@ function Transcript() {
       window.removeEventListener('scroll', onScroll);
     };
   }, []);
-
-  useEffect(() => {
-    fetch('http://localhost:5001/api/transcript-url', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ classId, lessonId })
-    })
-      .then(res => res.json())
-      .then(data => {
-        const resolvedUrl = data.audioUrl || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-        setAudioUrl(resolvedUrl);
-
-        if (data.transcript) {
-          setTranscript(data.transcript);
-          setTranscriptionComplete(true);
-        }
-      })
-      .catch(err => {
-        console.error("Failed to retrieve transcript:", err);
-        setAudioUrl('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
-      });
-  }, [classId, lessonId]);
 
   const startWebcam = async () => {
     try {
@@ -107,6 +84,32 @@ function Transcript() {
     }, 2000);
   };
 
+  const handleSubmitUrl = async () => {
+    if (!audioUrl) {
+      alert("Please enter an audio/video URL.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5001/api/transcript-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audioUrl })
+      });
+
+      const data = await response.json();
+      if (data.transcript) {
+        setTranscript(data.transcript);
+        setTranscriptionComplete(true);
+      } else {
+        alert("Transcription failed. Please check your URL or try again.");
+      }
+    } catch (err) {
+      console.error("Transcription error:", err);
+      alert("Something went wrong while fetching the transcript.");
+    }
+  };
+
   const canProceed = transcriptionComplete && isScrolledToBottom;
 
   const buttonStyle = {
@@ -134,21 +137,63 @@ function Transcript() {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2>Transcription + Emotion Detection</h2>
+      <h2>Lesson Transcription</h2>
 
       <div style={{ marginTop: '20px' }}>
-        <p><strong>Audio/Video URL:</strong> {audioUrl}</p>
+        <label>
+          Paste Audio/Video URL: https://storage.googleapis.com/aai-web-samples/espn-bears.m4a
+          <input
+            type="text"
+            value={audioUrl}
+            onChange={(e) => setAudioUrl(e.target.value)}
+            placeholder="https://example.com/audio.mp3"
+            style={{ width: '100%', padding: '10px', marginTop: '10px' }}
+          />
+        </label>
+        <button
+          onClick={handleSubmitUrl}
+          style={{
+            marginTop: '15px',
+            padding: '10px 20px',
+            backgroundColor: '#007bff',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          Transcribe
+        </button>
       </div>
 
       <div style={{ marginTop: '30px' }}>
         <h3>Transcript:</h3>
-        <p style={{ whiteSpace: 'pre-wrap', background: '#f1f1f1', padding: '10px', borderRadius: '5px' }}>
-          {transcript}
-        </p>
+        <div style={{ 
+  background: '#f9f9f9',
+  padding: '20px',
+  borderRadius: '8px',
+  lineHeight: '1.7',
+  textAlign: 'left',
+  fontSize: '16px',
+  color: '#333'
+}}>
+  {transcript
+    .split(/\n\s*\n|(?<=[.?!])\s{2,}/)
+    .map((para, idx) => (
+      <p key={idx} style={{
+        marginBottom: '16px',
+        textIndent: '2em',
+        marginTop: idx === 0 ? 0 : '8px'
+      }}>
+        {para.trim()}
+      </p>
+    ))}
+</div>
+
       </div>
 
       <div style={{ marginTop: '30px' }}>
-        <h3>Live Emotion Detection</h3>
+        <h3>Emotion Detection</h3>
         <video
           ref={webcamRef}
           autoPlay
@@ -186,7 +231,6 @@ function Transcript() {
         <button
           onClick={() => {
             stopWebcam();
-            navigate('/quiz');
             alert("Next clicked");
           }}
           style={canProceed ? buttonStyle : disabledButtonStyle}

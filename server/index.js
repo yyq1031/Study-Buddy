@@ -30,49 +30,30 @@ app.get('/api/hello', (req, res) => {
 });
 
 
-// Local Whisper Python script
-// app.post('/api/transcript', upload.single('video'), (req, res) => {
-//   const filePath = path.resolve(__dirname, req.file.path);
-//   exec(`python3 whisper.py "${filePath}"`, (error, stdout, stderr) => {
-//     if (error) {
-//       console.error("Whisper Error:", stderr);
-//       return res.status(500).json({ error: 'Failed to transcribe' });
-//     }
-//     res.json({ transcript: stdout });
-//   });
-// });
-
 // AssemblyAI API 
 const client = new AssemblyAI({ apiKey: process.env.ASSEMBLYAI_API_KEY });
 
-app.post('/api/transcript-dynamic', async (req, res) => {
-  console.log("Received request body:", req.body);
-  const { classId, lessonId } = req.body;
+app.post("/api/transcript-url", async (req, res) => {
+  const { audioUrl } = req.body;
+
+  if (!audioUrl || typeof audioUrl !== "string") {
+    return res.status(400).json({ error: "Invalid audioUrl" });
+  }
 
   try {
-    const lesson = await ClassModel.findOne({
-      classId,
-      lessonId,
-      type: "lesson"
-    });
-
-    const audioUrl = lesson?.content || "https://storage.googleapis.com/aai-web-samples/espn-bears.mp3";
-
     const transcript = await client.transcripts.transcribe({
       audio: audioUrl,
       speech_model: "universal"
     });
 
-    res.json({ transcript: transcript.text, sourceUrl: audioUrl });
+    res.json({ transcript: transcript.text });
   } catch (err) {
-    console.error("Dynamic transcription error:", err);
-    res.status(500).json({ error: "Failed to transcribe dynamic lesson" });
+    console.error("Transcription error:", err);
+    res.status(500).json({ error: "Failed to transcribe" });
   }
 });
 
-
 // Start server
-
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

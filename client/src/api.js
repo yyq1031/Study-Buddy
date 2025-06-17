@@ -81,9 +81,78 @@ export const getClasses = async (idToken) => {
       throw new Error(`Server error: ${response.status} - ${text}`);
     }
     const data = await response.json();
-    return { token: idToken, userData: data };
+    return data;
 
   } catch (error) {
     console.error("Signup error:", error.message);
   }
 }
+
+export const addClass = async (className, isActive) => {
+  const response = await fetch(`${base}/createClass`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name: className, active: isActive }),
+    });
+  const data = await response.json();
+  return data;
+}
+
+export const getAllStudents = async (idToken) => {
+  try {
+    const response = await fetch(`${base}/getAllStudents`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${idToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Server error: ${response.status} - ${text}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching students:", error.message);
+  }
+};
+
+export const addStudentToClass = async (classId, studentId) => {
+  const response = await fetch(`${base}/assignStudentToClass/${classId}/${studentId}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Content-Type': 'application/json',
+    }});
+  const data = await response.json();
+  return data;
+}
+
+export const getStudentClassProgress = async (classId, studentId, idToken) => {
+  try {
+    const response = await fetch(`${base}/getStudentClassProgress/${classId}/${studentId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${idToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Server error: ${response.status} - ${text}`);
+    }
+
+    const data = await response.json();
+    return data;
+
+  } catch (error) {
+    console.error("Error fetching student class progress:", error.message);
+  }
+};
