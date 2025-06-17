@@ -145,7 +145,7 @@ function LessonPage() {
             ref={videoRef}
             controls
             width="500"
-            src="https://www.w3schools.com/html/mov_bbb.mp4"
+            src="https://hosting-e2576.web.app/video.mp4"
             onEnded={handleVideoEnded}
           />
 
