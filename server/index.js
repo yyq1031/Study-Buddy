@@ -5,6 +5,7 @@ const { exec } = require('child_process');
 const multer = require('multer');
 const path = require('path');
 const loginRoutes = require('./auth.js');
+const cohereRoutes = require('./cohere.js');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -27,6 +28,7 @@ const upload = multer({ dest: 'uploads/' });
 
 // Your routes
 app.use('/api', loginRoutes);
+app.use('/api', cohereRoutes);
 
 app.get('/api/hello', (req, res) => {
   res.json({ message: "hihi" });
