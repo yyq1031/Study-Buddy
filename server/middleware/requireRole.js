@@ -1,6 +1,5 @@
-// const admin = require("firebase-admin");
-const { admin } = require("../firebaseAdmin");
-const db = admin.firestore();
+const { admin, db } = require("../firebaseAdmin");
+// const db = admin.firestore();
 
 const { getDoc } = require("../utils");
 

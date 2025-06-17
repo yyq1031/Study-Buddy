@@ -17,21 +17,31 @@ import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 
 const drawerWidth = 240;
-const navItems = [
-    {name: 'Home', link: ''},
-    {name: 'About', link: '/about'},
-    {name: 'Sign In', link: '/signin'},
-    {name: 'Sign Out', link: '/signout'}
-];
 
 function NavigationBar(props) {
+  const savedUser = localStorage.getItem('user');
+  const navItems = [
+      {name: 'Home', link: ''},
+      {name: 'About', link: '/about'},
+      {name: 'test', link: '/test'},
+  ];
+  if (savedUser) {
+    if (savedUser?.role == "teacher") {
+      navItems.push({name: 'Dashboard', link: '/dashboard'})
+      navItems.push({name: 'Upload', link: '/teacheruploadinterace'})
+    } else {
+      navItems.push({name: 'Classes', link: '/classes'})
+    }
+  } 
+  navItems.push({name: 'Sign In', link: '/signin'})
+  navItems.push({name: 'Sign Out', link: '/signout'})
+  
   const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
   };
-//   const base = import.meta.env.VITE_API_BASE_URL;
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
