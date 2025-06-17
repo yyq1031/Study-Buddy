@@ -41,7 +41,8 @@ function TeacherDashboard() {
           {classes.map(cls => (
             <Grid item xs={12} sm={6} md={4} key={cls.id}>
               <Card elevation={3}>
-                <CardActionArea onClick={() => navigate(`/dashboard/class/${cls.id}`)}>
+                <CardActionArea>
+                {/* <CardActionArea onClick={() => navigate(`/dashboard/class/${cls.id}`)}> */}
                   <CardContent>
                     <Typography variant="h6">{cls.name}</Typography>
                     <Typography variant="body2" color="textSecondary">
