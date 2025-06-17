@@ -116,7 +116,7 @@ const TeacherUploadInterface = () => {
         id: Date.now().toString(),
         type: materialType,
         topic: topicTag,
-        // uploadDate: new Date().toISOString(),
+        uploadDate: new Date().toISOString(),
         content: null,
       };
 

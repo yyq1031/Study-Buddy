@@ -27,7 +27,7 @@ function NavigationBar(props) {
   const navItems = [
       {name: 'Home', link: ''},
       {name: 'About', link: '/about'},
-      {name: 'test', link: '/test'},
+      // {name: 'test', link: '/test'},
   ];
   if (savedUser && savedUser.role) {
     if (savedUser?.role == "teacher") {
