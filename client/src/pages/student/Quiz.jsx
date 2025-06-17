@@ -1,9 +1,25 @@
 import { useState } from "react";
 import { Button, Typography, Box } from "@mui/material";
 import { useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { getQuestions } from "../../api";
 
 function Quiz() {
   const { classId, lessonId } = useParams();
+  useEffect(() => {
+      const fetchClasses = async () => {
+        try {
+          const token = localStorage.getItem('token');
+            const lessonData = await getQuestions(token, lessonId);
+            console.log(lessonData)
+            // if (classData) setClasses(classData);
+          } catch (err) {
+            console.error('Failed to fetch classes:', err.message);
+          }
+        };
+    
+        fetchClasses();
+      }, [lessonId]);
 
   const allQuestions = [
     {

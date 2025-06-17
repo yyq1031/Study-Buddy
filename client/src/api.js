@@ -88,6 +88,28 @@ export const getClasses = async (idToken) => {
   }
 }
 
+export const getQuestions = async (idToken, lessonId) => {
+  try {
+    const response = await fetch(`${base}/getLesson/${lessonId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${idToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Server error: ${response.status} - ${text}`);
+    }
+    const data = await response.json();
+    return data;
+
+  } catch (error) {
+    console.error("error:", error.message);
+  }
+}
+
 export const addClass = async (className, isActive) => {
   const response = await fetch(`${base}/createClass`, {
       method: 'POST',

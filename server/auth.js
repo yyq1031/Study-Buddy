@@ -380,35 +380,58 @@ router.get('/getStudentClassProgress/:classId', authenticate, async (req, res) =
   }
 });
 
-// GET /getClasses - get all classes for the authenticated user
-router.get("/getLesson/:lessonId", authenticate, async (req, res) => {
+// GET /getLesson - get all questions and user details of the lesson 
+router.get("/getLesson/:lessonId", authenticate, requireRole("student"), async (req, res) => {
   try {
     const { lessonId } = req.params;
     const studentId = req.user.uid;
-    if (req.user.role != student) {
-      res.status(500).json({ message: "Internal server error" });
+
+    const lessonDocSnap = await db.collection("lessons").doc(lessonId).get();
+    if (!lessonDocSnap.exists) {
+      return res.status(404).json({ message: "Lesson not found" });
     }
-    const userDoc = await db.collection("users").doc(uid).get();
-    if (!userDoc.exists) return res.status(404).json({ message: "User data not found" });
 
-    const location = `/progress/${lessonId.trim()}/studentProgress/${studentId.trim()}`
-    const progressDoc = await db.doc(location).get();
-    const progressData = progressDoc.exists ? progressDoc.data() : null;
-    const questions = progressData?.questions || [];
+    const questionIds = lessonDocSnap.data()?.questions || [];
+    if (!Array.isArray(questionIds) || questionIds.length === 0) {
+      return res.status(404).json({ message: "No questions found in lesson" });
+    }
 
-    for (const question of questions) {
-      const qId = question?.questionId || null
-      if (qId) {
-        const questionDoc = await db.collection("questions").doc(qId).get();
-        if (!userDoc.exists) console.warn(`Question with id ${qId} not found.`);
+    const progressDocPath = `/progress/${lessonId}/studentProgress/${studentId}`;
+    const progressDoc = await db.doc(progressDocPath).get();
+    const progressData = progressDoc.exists ? progressDoc.data() : {};
+    const confidenceLevels = progressData?.confidenceLevels || {};
+    const progressQuestions = progressData?.questions || [];
+
+    const progressMap = {};
+    for (const entry of progressQuestions) {
+      if (entry?.questionId) {
+        progressMap[entry.questionId] = entry;
       }
     }
+
+    const questionDetails = [];
+    for (const qId of questionIds) {
+      const questionDoc = await db.collection("questions").doc(qId).get();
+      if (!questionDoc.exists) {
+        console.warn(`Question with id ${qId} not found`);
+        continue;
+      }
+      const questionData = questionDoc.data();
+      const progressEntry = progressMap[qId] || {};
+      questionDetails.push({
+        id: qId,
+        ...questionData,
+        score: progressEntry?.score ?? null,
+      });
+    }
+
     res.json({
-      confidenceLevels: progressData?.confidenceLevels || []
+      questionDetails,
+      confidenceLevels,
     });
 
   } catch (err) {
-    console.error("Error in /getClasses:", err);
+    console.error("Error in /getLesson:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
