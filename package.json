@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"npm run dev --prefix client\" \"node server/index.js\""
+    "dev": "concurrently \"npm run dev --prefix client\" \"node server/index.js\"",
+    "install": "concurrently \"npm install --prefix client\" \"npm install --prefix server\""
   },
   "keywords": [],
   "author": "",
@@ -12,10 +13,5 @@
   "description": "",
   "devDependencies": {
     "concurrently": "^9.1.2"
-  },
-  "dependencies": {
-    "face-api.js": "^0.22.2",
-    "firebase": "^11.9.1",
-    "recharts": "^2.15.3"
   }
 }
