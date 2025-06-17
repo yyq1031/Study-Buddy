@@ -142,12 +142,12 @@ function Transcript() {
 
       <div style={{ marginTop: '20px' }}>
         <label>
-          Paste Audio/Video URL: https://storage.googleapis.com/aai-web-samples/espn-bears.m4a
+          Paste Audio/Video URL: https://drive.google.com/uc?export=download&id=14wxETmr3sToystahOpmWa5Rh5M6n_2TL
           <input
             type="text"
             value={audioUrl}
             onChange={(e) => setAudioUrl(e.target.value)}
-            placeholder="https://example.com/audio.mp3"
+            placeholder="German1"
             style={{ width: '100%', padding: '10px', marginTop: '10px' }}
           />
         </label>
