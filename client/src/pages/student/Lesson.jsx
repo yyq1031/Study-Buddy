@@ -134,7 +134,8 @@ function LessonPage() {
       <div>
         {/* <h2 style={{ display: 'inline-block', marginRight: '20px' }}>Lesson: {lessonId} (Class {classId})</h2> */}
         <h2 style={{ display: 'inline-block', marginRight: '20px' }}>
-          Lesson: {currentClass ? `(${currentClass.name})` : `(Class ${classId})`}
+          Lesson
+           {/* {currentClass ? `(${currentClass.name})` : `(Class ${classId})`} */}
         </h2>
       </div>
 
