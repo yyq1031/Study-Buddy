@@ -6,20 +6,108 @@ import { getQuestions } from "../../api";
 
 function Quiz() {
   const { classId, lessonId } = useParams();
+  const [allQuestions, setAllQuestions] = useState([]);
+  const [filteredQuestions, setFilteredQuestions] = useState([]);
+
+  //Fetch quiz questions from database
   useEffect(() => {
-      const fetchClasses = async () => {
-        try {
-          const token = localStorage.getItem('token');
-            const lessonData = await getQuestions(token, lessonId);
-            console.log(lessonData)
-            // if (classData) setClasses(classData);
-          } catch (err) {
-            console.error('Failed to fetch classes:', err.message);
-          }
-        };
-    
-        fetchClasses();
-      }, [lessonId]);
+    const fetchClasses = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const lessonData = await getQuestions(token, lessonId);
+        console.log("this is lessonData");
+        console.log(lessonData);
+        // if (classData) setClasses(classData);
+        const converted = convertLessonData(lessonData);
+        setAllQuestions(converted);
+      } catch (err) {
+        console.error("Failed to fetch classes:", err.message);
+      }
+    };
+
+    fetchClasses();
+  }, [lessonId]);
+
+  const convertLessonData = (lessonData) => {
+    return lessonData.questionDetails.map((q) => ({
+      question: q.contents.question,
+      options: q.contents.options,
+      answer: q.contents.answer,
+      classId: q.classId,
+      lessonId: q.lessonId,
+      tags: [q.tag],
+      difficulty: q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1), // "easy" -> "Easy"
+    }));
+  };
+
+  //Perform filtering from expressions 
+  useEffect(() => {
+    if (allQuestions.length === 0) return;
+
+    const expressionLog = JSON.parse(
+      localStorage.getItem("expressionLog") || "[]"
+    );
+    console.log("Expression Log:", expressionLog);
+
+    const emotionCounts = {
+      happy: 0,
+      sad: 0,
+      neutral: 0,
+    };
+
+    expressionLog.forEach((emotion) => {
+      if (Object.prototype.hasOwnProperty.call(emotionCounts, emotion)) {
+        emotionCounts[emotion]++;
+      }
+    });
+
+    let selectedQuestions = [];
+    const total =
+      emotionCounts.happy + emotionCounts.sad + emotionCounts.neutral;
+
+    if (total === 0) {
+      console.log("No emotions found, selecting 5 random questions.");
+      selectedQuestions = allQuestions
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 5);
+    } else {
+      let chosenType = "neutral";
+
+      if (
+        emotionCounts.happy > emotionCounts.sad &&
+        emotionCounts.happy > emotionCounts.neutral
+      ) {
+        chosenType = "happy";
+      } else if (
+        emotionCounts.sad > emotionCounts.happy &&
+        emotionCounts.sad > emotionCounts.neutral
+      ) {
+        chosenType = "sad";
+      }
+
+      if (chosenType === "happy") {
+        selectedQuestions = allQuestions.filter(
+          (q) => q.difficulty === "Medium" || q.difficulty === "Hard"
+        );
+      } else if (chosenType === "sad") {
+        selectedQuestions = allQuestions.filter(
+          (q) => q.difficulty === "Easy" || q.difficulty === "Medium"
+        );
+      } else {
+        selectedQuestions = allQuestions;
+      }
+
+      selectedQuestions = selectedQuestions
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 5);
+    }
+
+    console.log(
+      "Final selected questions:",
+      selectedQuestions.map((q) => q.question)
+    );
+    setFilteredQuestions(selectedQuestions);
+  }, [allQuestions]);
 
   // Previous dummy data
   /*
@@ -109,71 +197,78 @@ function Quiz() {
   ];
 */
 
-// New Dummy data to test AI confidence level
- const allQuestions = [
-  {
-    question: "What does it mean for a sorting algorithm to be stable?",
-    options: [
-      "It preserves the relative order of equal elements",
-      "It always sorts in O(n log n) time",
-      "It does not use recursion",
-      "It works without extra space"
-    ],
-    answer: "It preserves the relative order of equal elements",
-    classId: "cs101",
-    lessonId: "sorting-and-trees",
-    tags: ["stability", "definitions", "sorting"],
-    difficulty: "Easy"
-  },
-  {
-    question: "Which of the following sorting algorithms is stable?",
-    options: ["Heap Sort", "Quick Sort", "Selection Sort", "Bubble Sort"],
-    answer: "Bubble Sort",
-    classId: "cs101",
-    lessonId: "sorting-and-trees",
-    tags: ["sorting", "stability", "algorithm-properties"],
-    difficulty: "Medium"
-  },
-  {
-    question: "What is the height of a complete binary tree with 15 nodes?",
-    options: ["3", "4", "5", "6"],
-    answer: "3",
-    classId: "cs101",
-    lessonId: "sorting-and-trees",
-    tags: ["trees", "binary-trees", "tree-height"],
-    difficulty: "Medium"
-  },
-  {
-    question: "Which traversal method of a binary search tree results in sorted order?",
-    options: ["Pre-order", "Post-order", "In-order", "Level-order"],
-    answer: "In-order",
-    classId: "cs101",
-    lessonId: "sorting-and-trees",
-    tags: ["bst", "in-order", "tree-traversal"],
-    difficulty: "Easy"
-  },
-  {
-    question: "What is the worst-case time complexity of Heap Sort?",
-    options: ["O(n²)", "O(n log n)", "O(log n)", "O(n)"],
-    answer: "O(n log n)",
-    classId: "cs101",
-    lessonId: "sorting-and-trees",
-    tags: ["heap-sort", "time-complexity", "sorting"],
-    difficulty: "Medium"
-  },
-  {
-    question: "What kind of binary tree has all leaf nodes at the same depth and every internal node with two children?",
-    options: ["Complete Binary Tree", "Full Binary Tree", "Balanced Tree", "Degenerate Tree"],
-    answer: "Full Binary Tree",
-    classId: "cs101",
-    lessonId: "sorting-and-trees",
-    tags: ["tree-structures", "definitions", "binary-trees"],
-    difficulty: "Medium"
-  }
-];
+  // New Dummy data to test AI confidence level
+  const allQuestionsDummy = [
+    {
+      question: "What does it mean for a sorting algorithm to be stable?",
+      options: [
+        "It preserves the relative order of equal elements",
+        "It always sorts in O(n log n) time",
+        "It does not use recursion",
+        "It works without extra space",
+      ],
+      answer: "It preserves the relative order of equal elements",
+      classId: "cs101",
+      lessonId: "sorting-and-trees",
+      tags: ["stability", "definitions", "sorting"],
+      difficulty: "Easy",
+    },
+    {
+      question: "Which of the following sorting algorithms is stable?",
+      options: ["Heap Sort", "Quick Sort", "Selection Sort", "Bubble Sort"],
+      answer: "Bubble Sort",
+      classId: "cs101",
+      lessonId: "sorting-and-trees",
+      tags: ["sorting", "stability", "algorithm-properties"],
+      difficulty: "Medium",
+    },
+    {
+      question: "What is the height of a complete binary tree with 15 nodes?",
+      options: ["3", "4", "5", "6"],
+      answer: "3",
+      classId: "cs101",
+      lessonId: "sorting-and-trees",
+      tags: ["trees", "binary-trees", "tree-height"],
+      difficulty: "Medium",
+    },
+    {
+      question:
+        "Which traversal method of a binary search tree results in sorted order?",
+      options: ["Pre-order", "Post-order", "In-order", "Level-order"],
+      answer: "In-order",
+      classId: "cs101",
+      lessonId: "sorting-and-trees",
+      tags: ["bst", "in-order", "tree-traversal"],
+      difficulty: "Easy",
+    },
+    {
+      question: "What is the worst-case time complexity of Heap Sort?",
+      options: ["O(n²)", "O(n log n)", "O(log n)", "O(n)"],
+      answer: "O(n log n)",
+      classId: "cs101",
+      lessonId: "sorting-and-trees",
+      tags: ["heap-sort", "time-complexity", "sorting"],
+      difficulty: "Medium",
+    },
+    {
+      question:
+        "What kind of binary tree has all leaf nodes at the same depth and every internal node with two children?",
+      options: [
+        "Complete Binary Tree",
+        "Full Binary Tree",
+        "Balanced Tree",
+        "Degenerate Tree",
+      ],
+      answer: "Full Binary Tree",
+      classId: "cs101",
+      lessonId: "sorting-and-trees",
+      tags: ["tree-structures", "definitions", "binary-trees"],
+      difficulty: "Medium",
+    },
+  ];
+
   const [difficulty, setDifficulty] = useState("easy");
   //const filteredQuestions = allQuestions.filter(q => q.classId === classId && q.lessonId === lessonId && q.difficulty === difficulty);
-  const filteredQuestions = allQuestions;
   const initialAnswers = Array(filteredQuestions.length).fill(null);
   const [userAnswers, setUserAnswers] = useState(initialAnswers);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -181,37 +276,40 @@ function Quiz() {
   const [isQuizFinished, setIsQuizFinished] = useState(false);
   // Created new usestate so that it can be feed into AI
   const [userAnswersToAI, setUserAnswersToAI] = useState([]);
-  const [confidenceResult, setConfidenceResult] = useState(null); 
+  const [confidenceResult, setConfidenceResult] = useState(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
 
   useEffect(() => {
-  const callConfidenceAPI = async () => {
-    if (!isQuizFinished || userAnswersToAI.length === 0) return;
+    const callConfidenceAPI = async () => {
+      if (!isQuizFinished || userAnswersToAI.length === 0) return;
 
-    // Prepare the payload
-    const formattedQuestionsData = userAnswersToAI.map(item => ({
-      question: item.question,
-      studentAnswer: item.studentAnswer,
-      isCorrect: item.isCorrect,
-    }));
+      // Prepare the payload
+      const formattedQuestionsData = userAnswersToAI.map((item) => ({
+        question: item.question,
+        studentAnswer: item.studentAnswer,
+        isCorrect: item.isCorrect,
+      }));
 
-    setIsEvaluating(true);
-    try {
-      const response = await axios.post("http://localhost:5001/api/confidence", {
-        questionsData: formattedQuestionsData
-      });
+      setIsEvaluating(true);
+      try {
+        const response = await axios.post(
+          "http://localhost:5001/api/confidence",
+          {
+            questionsData: formattedQuestionsData,
+          }
+        );
 
-      // console.log("Confidence API response:", response.data);
-      setConfidenceResult(response.data);
-    } catch (error) {
-      console.error("Error calling confidence API:", error);
-    } finally {
-      setIsEvaluating(false);
-    }
-  };
+        // console.log("Confidence API response:", response.data);
+        setConfidenceResult(response.data);
+      } catch (error) {
+        console.error("Error calling confidence API:", error);
+      } finally {
+        setIsEvaluating(false);
+      }
+    };
 
-  callConfidenceAPI();
-}, [isQuizFinished, userAnswersToAI]);
+    callConfidenceAPI();
+  }, [isQuizFinished, userAnswersToAI]);
 
   function handleSelectOption(option) {
     // Original logic
@@ -319,64 +417,67 @@ function Quiz() {
       </Box>
     );
   }
-*/ 
+*/
 
+  if (isQuizFinished && confidenceResult) {
+    const tagData = confidenceResult.tagConfidence?.tagConfidence || [];
+    const aiComment = confidenceResult.tagConfidence?.comments || "";
 
-if (isQuizFinished && confidenceResult) {
-  const tagData = confidenceResult.tagConfidence?.tagConfidence || [];
-  const aiComment = confidenceResult.tagConfidence?.comments || "";
-
-  return (
-    <Box sx={{ p: 4, textAlign: "center" }}>
-      <Typography variant="h3" gutterBottom>
-        Quiz App
-      </Typography>
-
-      <Typography variant="h5" gutterBottom>
-        Quiz Completed!
-      </Typography>
-
-      <Typography variant="h6" gutterBottom>
-        Your Score: {score}/{filteredQuestions.length}
-      </Typography>
-
-      <Typography variant="body2" sx={{ mt: 1, mb: 3 }} color="text.secondary">
-        (Confidence is rated out of 100. 100 = full marks)
-      </Typography>
-
-      <Box sx={{ mt: 3, textAlign: "left", maxWidth: 600, mx: "auto" }}>
-        <Typography variant="h6" gutterBottom>
-          Confidence Levels by Topic:
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography variant="h3" gutterBottom>
+          Quiz App
         </Typography>
-        {tagData.map((item, index) => (
-          <Typography key={index} sx={{ mb: 1 }}>
-            <strong>{item.tag}:</strong> {item.confidence}/100
+
+        <Typography variant="h5" gutterBottom>
+          Quiz Completed!
+        </Typography>
+
+        <Typography variant="h6" gutterBottom>
+          Your Score: {score}/{filteredQuestions.length}
+        </Typography>
+
+        <Typography
+          variant="body2"
+          sx={{ mt: 1, mb: 3 }}
+          color="text.secondary"
+        >
+          (Confidence is rated out of 100. 100 = full marks)
+        </Typography>
+
+        <Box sx={{ mt: 3, textAlign: "left", maxWidth: 600, mx: "auto" }}>
+          <Typography variant="h6" gutterBottom>
+            Confidence Levels by Topic:
           </Typography>
-        ))}
-      </Box>
+          {tagData.map((item, index) => (
+            <Typography key={index} sx={{ mb: 1 }}>
+              <strong>{item.tag}:</strong> {item.confidence}/100
+            </Typography>
+          ))}
+        </Box>
 
-      <Box sx={{ mt: 4, textAlign: "left", maxWidth: 600, mx: "auto" }}>
-        <Typography variant="h6" gutterBottom>
-          AI Feedback:
+        <Box sx={{ mt: 4, textAlign: "left", maxWidth: 600, mx: "auto" }}>
+          <Typography variant="h6" gutterBottom>
+            AI Feedback:
+          </Typography>
+          <Typography>{aiComment}</Typography>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (isQuizFinished && isEvaluating) {
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography variant="h4" gutterBottom>
+          Evaluating your answers...
         </Typography>
-        <Typography>{aiComment}</Typography>
+        <Typography variant="body1">
+          Please wait while the AI analyzes your responses.
+        </Typography>
       </Box>
-    </Box>
-  );
-}
-
-if (isQuizFinished && isEvaluating) {
-  return (
-    <Box sx={{ p: 4, textAlign: "center" }}>
-      <Typography variant="h4" gutterBottom>
-        Evaluating your answers...
-      </Typography>
-      <Typography variant="body1">
-        Please wait while the AI analyzes your responses.
-      </Typography>
-    </Box>
-  );
-}
+    );
+  }
 
   return (
     <Box sx={{ p: 4, textAlign: "center" }}>
