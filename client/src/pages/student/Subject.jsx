@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 
 function Subject({ user }) {
+  const navigate = useNavigate();
   const { classId } = useParams(); // get classId from URL
   const [classInfo, setClassInfo] = useState(null);
 
@@ -112,9 +113,9 @@ function Subject({ user }) {
               <List>
                 {assignments.map((a, i) => (
                   <ListItem key={i} disablePadding>
-                    <ListItemButton onClick={() => console.log(`Clicked ${a.title}`)}>
-                      <ListItemText primary={a.title} secondary={`Due: ${a.due}`} />
-                    </ListItemButton>
+                    <ListItemButton onClick={() => navigate(`/class/${classId}/assignment/${a.id}`)}>
+  <ListItemText primary={a.title} secondary={`Due: ${a.due}`} />
+</ListItemButton>
                   </ListItem>
                 ))}
               </List>
