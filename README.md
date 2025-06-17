@@ -1,6 +1,6 @@
 # Lifehack
 
-To set up the project, run these commands:
+To set up the project and assuming npm is installed correctly, run these commands:
 
 ```bash
 git clone git@github.com:yyq1031/Lifehack.git
