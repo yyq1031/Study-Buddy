@@ -13,6 +13,7 @@ import {
   CardActionArea,
   CardMedia,
 } from '@mui/material';
+import { getStudentClassProgress } from '../../api';
 
 function Subject({ user }) {
   const navigate = useNavigate();
@@ -21,7 +22,43 @@ function Subject({ user }) {
 
   const [progress, setProgress] = useState(null);
   const [recommended, setRecommended] = useState(null);
-  const [assignments, setAssignments] = useState([]);
+
+  useEffect(() => {
+    // const foundClass = user?.classes.find(cls => String(cls.id) === classId);
+    // setClassInfo(foundClass);
+
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      setProgress(null);
+      setRecommended(null);
+      return;
+    }
+
+    // Fetch actual progress from backend
+    async function fetchProgress() {
+      try {
+        const data = await getStudentClassProgress(classId, user.id, token);
+        console.log(user);
+        console.log(data)
+        setProgress({
+          completed: data.completedLessons,
+          total: data.totalLessons,
+        });
+        setRecommended({
+          type: 'Quiz',
+          title: data.nextRecommendedActivity?.title || 'No activity',
+          lessonId: data.nextRecommendedActivity?.lessonId,
+        });
+      } catch (err) {
+        console.error('Failed to load progress:', err);
+      }
+    }
+
+    fetchProgress();
+  }, [classId, user]);
+
+
 
   useEffect(() => {
     // Find the class info based on classId
@@ -33,13 +70,12 @@ function Subject({ user }) {
     setRecommended({
       type: 'Quiz',
       title: 'Chapter 3: Algebra Practice',
-      image: 'https://via.placeholder.com/400x200?text=Lesson+Preview',
       lessonId: foundClass?.latestLessonId,
     });
-    setAssignments([
-      { title: 'Assignment 1', due: '2025-06-30' },
-      { title: 'Assignment 2', due: '2025-07-10' },
-    ]);
+    // setAssignments([
+    //   { title: 'Assignment 1', due: '2025-06-30' },
+    //   { title: 'Assignment 2', due: '2025-07-10' },
+    // ]);
   }, [classId, user]);
 
   const progressPercentage = progress ? (progress.completed / progress.total) * 100 : 0;
@@ -77,14 +113,14 @@ function Subject({ user }) {
         <Card variant="outlined" className="shadow-md w-full lg:w-1/2">
           <CardActionArea
             onClick={() =>
-              window.location.href = `/class/${classId}/lesson/${recommended?.lessonId}`
+              navigate(`/class/${classId}/lesson/${recommended?.lessonId}`)
             }
           >
             {recommended && (
               <CardMedia
                 component="img"
                 height="200"
-                image={recommended.image}
+                image="https://d15q5g7ipjper4.cloudfront.net/blog/wp-content/uploads/2022/09/pexels-charlotte-may-5965839.jpeg"
                 alt="Lesson Preview"
               />
             )}
@@ -104,7 +140,7 @@ function Subject({ user }) {
         </Card>
 
         {/* Assignments */}
-        <Card variant="outlined" className="shadow-md w-full lg:w-1/2">
+        {/* <Card variant="outlined" className="shadow-md w-full lg:w-1/2">
           <CardContent>
             <Typography variant="h6" gutterBottom>
               Assignments
@@ -123,7 +159,7 @@ function Subject({ user }) {
               <Typography>No assignments available</Typography>
             )}
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );

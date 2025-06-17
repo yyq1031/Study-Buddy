@@ -9,16 +9,37 @@ const { getDoc } = require("./utils");
 const router = express.Router();
 
 // Helper to fetch detailed classes from IDs
-async function fetchDetailedClasses(classIds) {
+async function fetchDetailedClasses(classInfoList) {
   const detailedClasses = [];
-  for (const classId of classIds) {
+
+  // for (const { classId, nextLessonId } of classInfoList) {
+  for (const map of classInfoList) {
+    const classId = map["classId"];
+    const nextLessonId = map["lessonId"];
     const docSnap = await db.collection("classes").doc(classId).get();
     if (!docSnap.exists) {
       console.warn(`Class with id ${classId} not found`);
       continue;
     }
-    detailedClasses.push({ id: docSnap.id, ...docSnap.data() });
+
+    const lessonDocSnap = await db.collection("lessons").doc(nextLessonId).get();
+    let nextLessonInfo = null;
+    if (!lessonDocSnap.exists) {
+      console.warn(`Lesson with id ${nextLessonId} not found`);
+      continue;
+    } else {
+      nextLessonInfo = {
+        id: nextLessonId || null,
+        ...lessonDocSnap.data()
+      }
+    }
+    detailedClasses.push({
+      id: docSnap.id,
+      ...docSnap.data(),
+      nextLesson: nextLessonInfo
+    });
   }
+
   return detailedClasses;
 }
 
@@ -47,8 +68,10 @@ router.post("/getprofile", authenticate, async (req, res) => {
         throw err;
       }
     }
-
-    res.json(userData);
+    res.json({
+      id: uid,
+      ...userData
+    });
   } catch (err) {
     console.error("Error in /getprofile:", err);
     res.status(500).json({ message: "Internal server error" });
@@ -62,10 +85,13 @@ router.get("/getClasses", authenticate, async (req, res) => {
     const userDoc = await db.collection("users").doc(uid).get();
     if (!userDoc.exists) return res.status(404).json({ message: "User data not found" });
 
-    const classIds = userDoc.data()?.classes || [];
-    const detailedClasses = await fetchDetailedClasses(classIds);
-
+    // const classIds = userDoc.data()?.classes || [];
+    // const detailedClasses = await fetchDetailedClasses(classIds);
+    // res.json(detailedClasses);
+    const classInfoList = userDoc.data()?.classes || [];
+    const detailedClasses = await fetchDetailedClasses(classInfoList);
     res.json(detailedClasses);
+
   } catch (err) {
     console.error("Error in /getClasses:", err);
     res.status(500).json({ message: "Internal server error" });
@@ -73,13 +99,11 @@ router.get("/getClasses", authenticate, async (req, res) => {
 });
 
 // GET /getClassesStudent/:studentId - get classes for a student (teacher access)
-router.get("/getClassesStudent/:studentId", authenticate, async (req, res) => {
+router.get("/getClassesStudent/:studentId", authenticate, requireRole("teacher"), async (req, res) => {
   try {
     const uid = req.user.uid;
     const userDoc = await db.collection("users").doc(uid).get();
     if (!userDoc.exists) return res.status(404).json({ message: "User data not found" });
-
-    // TODO: Add access control to ensure teacher can access this student’s classes
 
     const { studentId } = req.params;
     const studentDoc = await db.collection("users").doc(studentId).get();
@@ -242,6 +266,63 @@ router.get("/getAllStudents", authenticate, requireRole("teacher"), async (req, 
   } catch (err) {
     console.error("Error in /getAllStudents:", err);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.get('/getStudentClassProgress/:classId/:studentId', authenticate, async (req, res) => {
+  try {
+    const { classId, _ } = req.params;
+    const studentId = req.user.uid;
+
+    // Only allow access if requester is student (self) or teacher
+    // const requesterRole = req.user.role; // if you saved role in req.user
+    // if (req.user.uid !== studentId && requesterRole !== 'teacher') {
+    //   return res.status(403).json({ message: 'Forbidden' });
+    // }
+
+    // Get class lessons
+    const classDoc = await db.collection('classes').doc(classId).get();
+    if (!classDoc.exists) return res.status(404).json({ message: 'Class not found' });
+    const lessons = classDoc.data().lessons || [];
+
+    let completedCount = 0;
+    const details = [];
+
+    // For each lesson, get progress of this student
+    for (const lessonId of lessons) {
+      const location = `/progress/${lessonId.trim()}/studentProgress/${studentId.trim()}`
+      const progressDoc = await db
+        .doc(location)
+        .get();
+
+      let completed = true;
+      const progressData = progressDoc.exists ? progressDoc.data() : null;
+      if (progressData?.confidenceLevels) {
+        for (const [tag, val] of Object.entries(progressData.confidenceLevels)) {
+          if (parseInt(val) < 80) {
+            completed = false;
+            break;
+          }
+        }
+      }
+
+      if (completed) completedCount++;
+
+      details.push({
+        lessonId,
+        completed,
+        progress: progressData,
+      });
+    }
+
+    res.json({
+      totalLessons: lessons.length,
+      completedLessons: completedCount,
+      details,
+    });
+  } catch (err) {
+    console.error('Error in /getStudentClassProgress:', err);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 

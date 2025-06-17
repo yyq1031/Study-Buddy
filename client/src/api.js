@@ -133,3 +133,26 @@ export const addStudentToClass = async (classId, studentId) => {
   const data = await response.json();
   return data;
 }
+
+export const getStudentClassProgress = async (classId, studentId, idToken) => {
+  try {
+    const response = await fetch(`${base}/getStudentClassProgress/${classId}/${studentId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${idToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Server error: ${response.status} - ${text}`);
+    }
+
+    const data = await response.json();
+    return data;
+
+  } catch (error) {
+    console.error("Error fetching student class progress:", error.message);
+  }
+};
