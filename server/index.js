@@ -54,7 +54,6 @@ app.post("/api/transcript-url", async (req, res) => {
 });
 
 // Start server
-
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

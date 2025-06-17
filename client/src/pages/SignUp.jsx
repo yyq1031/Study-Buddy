@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -137,23 +138,9 @@ export default function SignUp() {
             </Button>
           </Box>
 
-          <Divider>
-            <Typography variant="body2" color="text.secondary">
-              or
-            </Typography>
-          </Divider>
-
-          <Button
-            variant="outlined"
-            fullWidth
-            onClick={() => alert('Google sign-up clicked')}
-          >
-            Sign up with Google
-          </Button>
-
           <Typography variant="body2" align="center">
             Already have an account?{' '}
-            <Link href="/sign-in" underline="hover">
+            <Link href="/signin" underline="hover">
               Sign in
             </Link>
           </Typography>

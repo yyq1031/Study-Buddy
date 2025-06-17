@@ -44,7 +44,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path='/dashboard' element={<Dashboard /> }/>
         <Route path='/teacheruploadinterace' element={<TeacherUploadInterface /> }/>
-        <Route path='/lessons' element={<LessonPage /> }/> 
+        <Route path='/lesson' element={<LessonPage /> }/> 
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route

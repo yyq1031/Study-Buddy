@@ -44,9 +44,10 @@ function Classes({ user }) {
             <Card variant="outlined" sx={{ boxShadow: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
               <CardContent sx={{ flexGrow: 1 }}>
                 <Typography variant="h6" gutterBottom>
-                  <Link to={`/class/${cls.id}`} style={{ textDecoration: 'none', color: '#1976d2' }}>
-                    {cls.name}
+                  <Link to={`/class/${cls.id}/preferences`} style={{ textDecoration: 'none' }}>
+                    <Button size="small" variant="contained">Study</Button>
                   </Link>
+
                 </Typography>
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="body2">Progress</Typography>

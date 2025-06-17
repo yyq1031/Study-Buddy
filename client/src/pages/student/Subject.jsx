@@ -71,7 +71,7 @@ function Subject({ user }) {
         </Card>
       </div>
 
-      {/* Next Activity + Assignments */}
+      {/* Next Activity and Assignments */}
       <div className="flex flex-col lg:flex-row gap-10">
         {/* Recommended Activity */}
         <Card variant="outlined" className="shadow-md w-full lg:w-1/2">
