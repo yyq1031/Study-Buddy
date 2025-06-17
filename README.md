@@ -32,8 +32,10 @@ You need to set up a .env file in the root directory.
     After the dashboard is loaded, find the AI keys generation on the left navigation bar.
 
     🔐 Note: Do not commit your .env file to version control.
+    
 Create and place the firebaseAdmin.js file containing the following info in server:
-    ```
+
+    
     const admin = require("firebase-admin");
     const serviceAccount = require("./firebase-server-account.json");
 
