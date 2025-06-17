@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
 const { exec } = require('child_process');
-// const multer = require('multer');
+const multer = require('multer');
 const path = require('path');
 const { AssemblyAI } = require("assemblyai");
 const loginRoutes = require('./auth.js');
