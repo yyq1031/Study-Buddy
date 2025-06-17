@@ -9,7 +9,7 @@ npm install recharts
 
 cd server
 npm install
-npm install multer // check again
+npm install assemblyai
 cd ..
 
 cd client
