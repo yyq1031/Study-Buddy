@@ -73,6 +73,7 @@ function App() {
         <Route path="/class/:classId/assignment/:assignmentId"
         element={user?.role === 'student' ? <Assignment /> : <Navigate to="/" />}
         />
+        <Route path="/editClasses" element={<AddClass />} />
         <Route path="/test" element={<AddClass />} />
       </Routes>
     </Router>
