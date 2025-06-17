@@ -178,3 +178,27 @@ export const getStudentClassProgress = async (classId, idToken) => {
     console.error("Error fetching student class progress:", error.message);
   }
 };
+
+export const updateQuizScore = async (quizes, confidenceLevels, lessonId, idToken) => {
+  try {
+    const response = await fetch(`${base}/updateProgress/${lessonId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${idToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ quizes, confidenceLevels }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Server error: ${response.status} - ${text}`);
+    }
+
+    const data = await response.json();
+    return data;
+
+  } catch (error) {
+    console.error("Error updating quiz score:", error.message);
+  }
+};

@@ -256,24 +256,46 @@ router.get("/getStudentProgress/:classId/:lessonId", authenticate, async (req, r
   }
 });
 
-// POST /updateProgress/:classId/:lessonId/:quizId - update student's progress
-router.post("/updateProgress/:classId/:lessonId/:quizId", authenticate, async (req, res) => {
+// POST /updateProgress/:classId/:lessonId - update student's progress
+router.post("/updateProgress/:classId/:lessonId", authenticate, async (req, res) => {
   try {
-    const { classId, lessonId, quizId } = req.params;
-    const uid = req.user.uid;
-    const { answers, score, timeTaken } = req.body;
+    const { classId, lessonId } = req.params;
+    const studentId = req.user.uid;
+    const { quizes = [], confidenceLevels = {} } = req.body;
 
-    const progressRef = db.collection(`progress/${classId}_${lessonId}/studentProgress`).doc(uid);
-    await progressRef.set({
-      [quizId]: {
-        answers,
+    const progressRef = db.collection(`progress/${classId}_${lessonId}/studentProgress`).doc(studentId);
+    const progressDoc = await progressRef.get();
+
+    const previousData = progressDoc.exists ? progressDoc.data() : {};
+    const existingQuestions = Array.isArray(previousData.questions) ? previousData.questions : [];
+
+    const updatedQuestions = [...existingQuestions];
+
+    for (const quiz of quizes) {
+      const { questionId, score } = quiz;
+      if (!questionId) continue;
+
+      const existingIndex = updatedQuestions.findIndex(q => q.questionId === questionId);
+      const entry = {
+        questionId,
         score,
-        timeTaken,
         submittedAt: new Date().toISOString()
+      };
+
+      if (existingIndex !== -1) {
+        updatedQuestions[existingIndex] = entry;
+      } else {
+        updatedQuestions.push(entry);
       }
+    }
+
+    await progressRef.set({
+      questions: updatedQuestions,
+      confidenceLevels,
     }, { merge: true });
 
-    res.json({ message: "Submission recorded." });
+    res.json({ message: "Progress successfully updated." });
+
   } catch (err) {
     console.error("Error in /updateProgress:", err);
     res.status(500).json({ message: "Internal server error" });
