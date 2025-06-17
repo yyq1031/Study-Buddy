@@ -14,7 +14,8 @@ import ClassesPage from './pages/student/Classes';
 import Quiz from './pages/student/Quiz';
 import SignOut from './pages/SignOut';
 import Subject from './pages/student/Subject';
-
+import PreferencePage from './pages/student/Preference';
+import Transcript from './pages/student/Transcript';
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -59,6 +60,8 @@ function App() {
         <Route path="/quiz" element={<Quiz />} />
         <Route path="/signout" element={<SignOut />} />
         <Route path="/quiz/:classId/:lessonId" element={<Quiz />} />
+        <Route path="/preference" element={<PreferencePage />} />
+        <Route path="/transcript" element={<Transcript />} />
         <Route
       path="/class/:classId"
       element={user?.role === 'student' ? <Subject user={user} /> : <Navigate to="/" />}
