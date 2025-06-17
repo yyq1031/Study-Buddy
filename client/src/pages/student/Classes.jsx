@@ -51,22 +51,25 @@ function Classes({ user }) {
                   </Link>
 
                 </Typography>
-                <Box sx={{ mt: 2 }}>
+                {/* <Box sx={{ mt: 2 }}>
                   <Typography variant="body2">Progress</Typography>
                   <LinearProgress
                     variant="determinate"
                     value={cls.progress || 0}
                     sx={{ height: 10, borderRadius: 5 }}
                   />
-                </Box>
+                </Box> */}
               </CardContent>
               <CardActions>
-                <Link to={
-                  user.role == 'teacher' 
-                  ? `/teacherview/${cls.id}` 
-                  : `/class/${cls.id}`} style={{ textDecoration: 'none' }}>
+                { user.role == 'teacher' 
+                ? <Link to={`/teacherview/${cls.id}`} style={{ textDecoration: 'none' }}>
+                  <Button size="small" variant="contained">View Class</Button>
+                </Link>
+                : <Link to={`/class/${cls.id}`} style={{ textDecoration: 'none' }}>
                   <Button size="small" variant="contained">Study</Button>
                 </Link>
+                }
+                
               </CardActions>
             </Card>
           </Grid>
