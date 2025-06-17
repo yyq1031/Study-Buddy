@@ -91,6 +91,8 @@ function LessonPage() {
       return acc;
     }, {});
 
+    //Added this so that expressionLog can be accessed in Quiz
+    localStorage.setItem('expressionLog', JSON.stringify(expressionLog));
     console.log("Final expression log:", expressionLog);
     alert("Lesson complete! Expression summary:\n" + JSON.stringify(summary, null, 2));
   };
