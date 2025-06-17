@@ -41,7 +41,7 @@ function Classes({ user }) {
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Welcome, {user.name}
+        Welcome, {user ? user.name: 'user'}
       </Typography>
       <Typography variant="h6" gutterBottom>
         Your Classes:

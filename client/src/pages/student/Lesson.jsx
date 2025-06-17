@@ -17,8 +17,11 @@ function LessonPage() {
   const [currentClass, setCurrentClass] = useState(null);
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("user"));
-    if (userData?.classes) {
+    let userData = null;
+    if (localStorage.getItem("user") != null) {
+      userData = JSON.parse(localStorage.getItem("user"));
+    }
+    if (userData && userData?.classes) {
       const found = userData.classes.find(cls => cls.id === classId);
       setCurrentClass(found);
     }
