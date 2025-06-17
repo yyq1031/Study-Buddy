@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Container,
@@ -11,20 +11,25 @@ import {
   LinearProgress,
   Box,
 } from '@mui/material';
-import { useEffect } from 'react';
 import { getClasses } from '../../api';
 
 function Classes({ user }) {
+  const [classes, setClasses] = useState([]);
+
   useEffect(() => {
-    getClasses(localStorage.getItem('token'));
-    console.log(user);
-  })
-  
-  // get classes of user from backend
-  user.classes = [
-    { id: 1, name: "Math 101", latestLesson: "Derivatives", latestLessonId: "derivatives" },
-    { id: 2, name: "Chemistry", latestLesson: "Acids and Bases", latestLessonId: "acids-bases" }
-  ]
+    const fetchClasses = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const classData = await getClasses(token);
+        if (classData) setClasses(classData);
+      } catch (err) {
+        console.error('Failed to fetch classes:', err.message);
+      }
+    };
+
+    fetchClasses();
+  }, []);
+
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
@@ -34,7 +39,7 @@ function Classes({ user }) {
         Your Enrolled Classes:
       </Typography>
       <Grid container spacing={3}>
-        {user.classes.map((cls) => (
+        {classes.map((cls) => (
           <Grid item xs={12} md={6} key={cls.id}>
             <Card variant="outlined" sx={{ boxShadow: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
               <CardContent sx={{ flexGrow: 1 }}>

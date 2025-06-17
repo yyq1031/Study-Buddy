@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { addClass, getAllStudents, getClasses } from "../../api";
+import { addClass, addStudentToClass, getAllStudents, getClasses } from "../../api";
 import { useEffect } from "react";
 
 function AddClass() {
@@ -16,7 +16,7 @@ function AddClass() {
     useEffect(() => {
         const fetchStudents = async () => {
             try {
-                const students = await getAllStudents();
+                const students = await getAllStudents(token);
                 setAllStudents(students);
             } catch (err) {
                 console.error("Failed to fetch students:", err.message);
@@ -27,36 +27,21 @@ function AddClass() {
         const fetchTeacherClasses = async () => {
             try {
                 const classes = await getClasses(token);
-                
-                // const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/getClasses`, {
-                //     method: "GET",
-                //     headers: {
-                //         'Authorization': `Bearer ${token}`,
-                //         'Content-Type': 'application/json'
-                //     }
-                // });
-                // const data = await response.json();
-                setTeacherClasses(classes);
+                if (classes) {
+                    setTeacherClasses(classes);
+                }
+                console.log(classes);
             } catch (err) {
                 console.error("Error fetching teacher classes:", err);
             }
         };
         fetchTeacherClasses();
-    }, []);
+    }, [token]);
 
     const assignStudentToClass = async () => {
         if (!selectedClassId || !selectedStudentId) return;
-
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/assignStudentToClass/${selectedClassId}/${selectedStudentId}`, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            const data = await response.json();
+            const data = await addStudentToClass(selectedClassId, selectedStudentId);
             alert(data.message);
         } catch (err) {
             console.error("Error assigning student:", err);
@@ -68,7 +53,9 @@ function AddClass() {
         e.preventDefault();
 
         try {
-        await addClass(className, isActive); // returns list of dict of classes
+        await addClass(className, isActive);
+        const updatedClasses = await getClasses(token)
+        setTeacherClasses(updatedClasses);
         setResponseMsg(`Class created successfully.`);
         setClassName("");
         setIsActive(false);
