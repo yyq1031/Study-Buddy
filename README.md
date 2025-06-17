@@ -46,6 +46,6 @@ Create and place the firebaseAdmin.js file containing the following info in serv
     const db = admin.firestore();
 
     module.exports = { admin, db };
-    ```
+    
     
 Demo Video can be found on: https://www.youtube.com/watch?v=7s5WBDwzroc
