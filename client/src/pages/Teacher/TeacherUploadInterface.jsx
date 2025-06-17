@@ -32,7 +32,7 @@ import {
   Visibility,
   Save,
 } from "@mui/icons-material";
-import { getClassLessonIds } from "../../api";
+import { addNewQuiz, getClassLessonIds } from "../../api";
 import { useEffect } from "react";
 
 const TeacherUploadInterface = () => {
@@ -51,27 +51,28 @@ const TeacherUploadInterface = () => {
 
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState("");
+  const [selectedLessonId, setSelectedLessonId] = useState(null);
   const [lessons, setLessons] = useState([]);
+
+  const token = localStorage.getItem('token');
   
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const token = localStorage.getItem('token');
+        
         const classData = await getClassLessonIds(token);
-        // user.classes = classData;
-        console.log(classData)
         if (classData) setClasses(classData);
       } catch (err) {
         console.error('Failed to fetch classes:', err.message);
       }
     };
     fetchClasses();
-  }, []);
+  }, [token]);
   
   useEffect(() => {
     if (selectedClass) {
       const cls = classes.find((c) => c.id === selectedClass);
-      if (cls) setLessons(cls.lessons);
+      if (cls) setLessons(cls?.detailedLessons || []);
     } else {
       setLessons([]);
     }
@@ -118,6 +119,7 @@ const TeacherUploadInterface = () => {
         topic: topicTag,
         uploadDate: new Date().toISOString(),
         content: null,
+        lessonId: selectedLessonId,
       };
 
       // Handle different material types
@@ -135,7 +137,7 @@ const TeacherUploadInterface = () => {
 
       // Add to local state (replace with actual API call later)
       setMaterials([...materials, materialData]);
-      console.log(materialData);
+      addNewQuiz(token, materialData);
 
       // Setup to upload to backend
 
@@ -222,7 +224,11 @@ const TeacherUploadInterface = () => {
               disabled={!selectedClass}
               options={lessons.map((lesson) => lesson.name)}
               value={topicTag}
-              onInputChange={(event, newValue) => setTopicTag(newValue)}
+              onInputChange={(event, newValue) => {
+                setTopicTag(newValue);
+                const selectedLesson = lessons.find((lesson) => lesson.name === newValue);
+                setSelectedLessonId(selectedLesson?.id || null);
+              }}
               renderInput={(params) => (
                 <TextField {...params} label="Lesson Name *" sx={{ mb: 3 }} />
               )}
@@ -352,40 +358,40 @@ const TeacherUploadInterface = () => {
                             />
                           ))}
 
-                          <FormControl fullWidth sx={{ mt: 2 }}>
-                            <InputLabel>Correct Answer</InputLabel>
-                            <Select
-                              value={q.correctAnswer}
-                              onChange={(e) =>
-                                handleQuizQuestionChange(
-                                  index,
-                                  "correctAnswer",
-                                  e.target.value
-                                )
-                              }
-                              label="Correct Answer"
-                            >
-                              {q.options.map((_, optIndex) => (
-                                <MenuItem key={optIndex} value={optIndex}>
-                                  Option {optIndex + 1}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                          <div>
-                          {/* Explanation */}
-                          <TextField
-                            fullWidth
-                            label="Explanation"
-                            value={q.explanation}
-                            onChange={(e) => handleQuizQuestionChange(
-                              index,
-                              "explanation",
-                              e.target.value
-                            )}
-                            sx={{ mb: 3 }}
-                          />
-                          </div>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+                            <FormControl fullWidth sx={{ mt: 2 }}>
+                              <InputLabel>Correct Answer</InputLabel>
+                              <Select
+                                value={q.correctAnswer}
+                                onChange={(e) =>
+                                  handleQuizQuestionChange(
+                                    index,
+                                    "correctAnswer",
+                                    e.target.value
+                                  )
+                                }
+                                label="Correct Answer"
+                              >
+                                {q.options.map((_, optIndex) => (
+                                  <MenuItem key={optIndex} value={optIndex}>
+                                    Option {optIndex + 1}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                            {/* Explanation */}
+                            <TextField
+                              fullWidth
+                              label="Explanation"
+                              value={q.explanation}
+                              onChange={(e) => handleQuizQuestionChange(
+                                index,
+                                "explanation",
+                                e.target.value
+                              )}
+                              sx={{ mb: 3 }}
+                            />
+                            </Box>
                         </Card>
                       ))}
                     </Box>

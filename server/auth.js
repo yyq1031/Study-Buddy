@@ -464,7 +464,6 @@ router.get("/getClassAndLessons", authenticate, async (req, res) => {
       const detailedLessons = [];
 
       for (const lessonId of lessonIds) {
-        console.log(lessonId)
         const lessonDoc = await db.collection("lessons").doc(lessonId.trim()).get();
         if (lessonDoc.exists) {
           const lessonData = lessonDoc.data();
@@ -494,50 +493,54 @@ router.get("/getClassAndLessons", authenticate, async (req, res) => {
 });
 
 // POST /createQuestion - create a new question (e.g., teacher only)
-router.post("/createQuestion/:lessonId", authenticate, requireRole("teacher"), async (req, res) => {
+router.post("/createQuestion", authenticate, requireRole("teacher"), async (req, res) => {
   try {
-    const lessonId = req.params.lessonId.trim();
+    const contents = req.body.content;
+    const rawLessonId = req.body.lessonId;
+    const lessonName = req.body.topic;
+    const type = req.body.type;
 
-    const {
-      question,
-      options,
-      correctAnswer,
-      explanation,
-      tag,
-    } = req.body;
+    let lessonId = rawLessonId?.trim() || null;
 
-    // Create question object
+    if (!lessonId) {
+      const newLesson = {
+        name: lessonName.trim() || null,
+        questions: [],
+        createdAt: new Date().toISOString()
+      };
+      const newLessonRef = await db.collection("lessons").add(newLesson);
+      lessonId = newLessonRef.id;
+    } 
+    
+    const lessonRef = await db.collection("lessons").doc(lessonId.trim());
+    const lessonDoc = await lessonRef.get();
+    let updatedQuestions = lessonDoc.data()?.questions || [];
+
     const newQuestion = {
-      contents: {
-        answer: correctAnswer,
-        explanation: text,
-        options: options,
-        question: question,
-      },
+      contents: contents,
       difficulty: "easy",
       type: type,
-      tags: tags,
+      tags: 'basics',
       lessonId: lessonId,
     };
 
-    // Add to Firestore
-    const questionRef = await db.collection("questions").add(newQuestion);
-
-    // Optionally associate question with a lesson
-    if (lessonId) {
-      const lessonRef = db.collection("lessons").doc(lessonId.trim());
-      const lessonDoc = await lessonRef.get();
-
-      if (!lessonDoc.exists) {
-        return res.status(404).json({ message: "Lesson not found" });
+    if (type == "quiz") {
+      for (const question of contents) {
+        const indQ = {
+          contents: question,
+          ...newQuestion
+        }
+        const questionRef = await db.collection("questions").add(indQ);
+        updatedQuestions.push(questionRef.id);
       }
 
-      const lessonQuestions = lessonDoc.data().questions || [];
-      lessonQuestions.push(questionRef.id);
-      await lessonRef.update({ questions: lessonQuestions });
+    } else {
+      const questionRef = await db.collection("questions").add(newQuestion);
+      updatedQuestions.push(questionRef.id);
     }
 
-    res.json({ message: "Question created", questionId: questionRef.id });
+    await lessonRef.update({ questions: updatedQuestions });
+    res.json({ message: "Question(s) created" });
 
   } catch (err) {
     console.error("Error in /createQuestion:", err);

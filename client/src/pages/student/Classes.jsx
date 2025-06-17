@@ -24,7 +24,6 @@ function Classes({ user }) {
         const token = localStorage.getItem('token');
         const classData = await getClasses(token);
         
-        // console.log(user.classes)
         if (user && classData) {
           user.classes = classData;
           localStorage.setItem('user', user);

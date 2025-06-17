@@ -221,3 +221,28 @@ export const getClassLessonIds = async (idToken) => {
     console.error("Error getting class/lesson ids/names:", error.message);
   }
 };
+
+
+export const addNewQuiz = async (idToken, val) => {
+  try {
+    const response = await fetch(`${base}/createQuestion`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${idToken}`,
+        'Content-Type': 'application/json',
+      }, 
+      body: JSON.stringify(val),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Server error: ${response.status} - ${text}`);
+    }
+
+    const data = await response.json();
+    return data;
+
+  } catch (error) {
+    console.error("Error getting class/lesson ids/names:", error.message);
+  }
+};
