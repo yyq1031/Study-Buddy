@@ -16,6 +16,7 @@ import SignOut from './pages/SignOut';
 import Subject from './pages/student/Subject';
 import PreferencePage from './pages/student/Preference';
 import Transcript from './pages/student/Transcript';
+import Assignment from './pages/student/Assignment';
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -67,6 +68,10 @@ function App() {
       path="/class/:classId"
       element={user?.role === 'student' ? <Subject user={user} /> : <Navigate to="/" />}
     />
+    <Route
+  path="/class/:classId/assignment/:assignmentId"
+  element={user?.role === 'student' ? <Assignment /> : <Navigate to="/" />}
+/>
       </Routes>
     </Router>
   );
