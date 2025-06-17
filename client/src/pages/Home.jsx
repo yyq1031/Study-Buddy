@@ -16,6 +16,7 @@ import { AutoAwesome, Group, Insights } from "@mui/icons-material";
 import homeIllustration from "../assets/home-illustration.jpg";
 import studentLearning from "../assets/student-learning.png";
 import teacherDashboard from "../assets/teacher-dashboard.png";
+import { Link } from "react-router-dom";
 
 const features = [
   {
@@ -99,6 +100,7 @@ export default function Home() {
                     },
                     transition: 'all 0.3s ease'
                   }}
+                  component={Link}to='/about'
                 >
                   Get Started
                 </Button>
