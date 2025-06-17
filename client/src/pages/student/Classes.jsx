@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   Container,
@@ -11,25 +11,20 @@ import {
   LinearProgress,
   Box,
 } from '@mui/material';
+import { useEffect } from 'react';
 import { getClasses } from '../../api';
 
 function Classes({ user }) {
-  const [classes, setClasses] = useState([]);
-
   useEffect(() => {
-    const fetchClasses = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const classData = await getClasses(token);
-        if (classData) setClasses(classData);
-      } catch (err) {
-        console.error('Failed to fetch classes:', err.message);
-      }
-    };
-
-    fetchClasses();
-  }, []);
-
+    getClasses(localStorage.getItem('token'));
+    console.log(user);
+  })
+  
+  // get classes of user from backend
+  user.classes = [
+    { id: 1, name: "Math 101", latestLesson: "Derivatives", latestLessonId: "derivatives" },
+    { id: 2, name: "Chemistry", latestLesson: "Acids and Bases", latestLessonId: "acids-bases" }
+  ]
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
@@ -39,15 +34,14 @@ function Classes({ user }) {
         Your Enrolled Classes:
       </Typography>
       <Grid container spacing={3}>
-        {classes.map((cls) => (
+        {user.classes.map((cls) => (
           <Grid item xs={12} md={6} key={cls.id}>
             <Card variant="outlined" sx={{ boxShadow: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
               <CardContent sx={{ flexGrow: 1 }}>
                 <Typography variant="h6" gutterBottom>
-                  <Link to={`/class/${cls.id}/preferences`} style={{ textDecoration: 'none' }}>
-                    <Button size="small" variant="contained">Study</Button>
+                  <Link to={`/class/${cls.id}`} style={{ textDecoration: 'none', color: '#1976d2' }}>
+                    {cls.name}
                   </Link>
-
                 </Typography>
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="body2">Progress</Typography>

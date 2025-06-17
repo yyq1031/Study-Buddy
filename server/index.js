@@ -5,12 +5,18 @@ const { exec } = require('child_process');
 const multer = require('multer');
 const path = require('path');
 const { AssemblyAI } = require("assemblyai");
+const admin = require("firebase-admin");
 const loginRoutes = require('./auth.js');
+
+const serviceAccount = require("./serviceAccountKey.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// CORS config
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true,
@@ -22,13 +28,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const upload = multer({ dest: 'uploads/' });
 
-// Routes
+// Auth routes
 app.use('/api', loginRoutes);
 
 app.get('/api/hello', (req, res) => {
   res.json({ message: "hihi" });
 });
-
 
 // AssemblyAI API 
 const client = new AssemblyAI({ apiKey: process.env.ASSEMBLYAI_API_KEY });
