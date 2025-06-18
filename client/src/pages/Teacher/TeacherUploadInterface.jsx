@@ -137,9 +137,10 @@ const TeacherUploadInterface = () => {
 
       // Add to local state (replace with actual API call later)
       setMaterials([...materials, materialData]);
-      if (materialType === "text") {
+      if (materialType === "quiz") {
         addNewQuiz(token, materialData);
       }
+      
 
       // Setup to upload to backend
 

@@ -525,18 +525,24 @@ router.post("/createQuestion", authenticate, requireRole("teacher"), async (req,
     };
 
     if (type == "quiz") {
-      for (const question of contents) {
+      console.log(contents.questions);
+      for (const question of contents.questions) {
+        question.answer = question.options?.[question.correctAnswer]
         const indQ = {
           contents: question,
-          ...newQuestion
+          difficulty: "easy",
+          type: type,
+          tags: 'basics',
+          lessonId: lessonId,
         }
+        console.log(indQ);
         const questionRef = await db.collection("questions").add(indQ);
         updatedQuestions.push(questionRef.id);
       }
 
     } else {
-      const questionRef = await db.collection("questions").add(newQuestion);
-      updatedQuestions.push(questionRef.id);
+      // const questionRef = await db.collection("questions").add(newQuestion);
+      // updatedQuestions.push(questionRef.id);
     }
 
     await lessonRef.update({ questions: updatedQuestions });
