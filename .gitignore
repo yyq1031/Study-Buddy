@@ -29,3 +29,4 @@ dist-ssr
 # Env files
 *.env
 whisper-env/
+server/firebase-server-account.json
