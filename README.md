@@ -34,7 +34,15 @@ You need to set up a .env file in the root directory.
     🔐 Note: Do not commit your .env file to version control.
 
 
-Ensure that after git clone there is a public folder in client that contains a subfolder called models. Models should contain face_expression_model-shard1, face_expression_model-weights_manifest, tiny_face_detector_model-shard1, and tiny_face_detector_model-weights_manifest. These models can also be found at https://github.com/justadudewhohacks/face-api.js-models.
+Ensure that after git clone there is a public folder in client that contains a subfolder called models. Models should contain face_expression_model-shard1, face_expression_model-weights_manifest, tiny_face_detector_model-shard1, and tiny_face_detector_model-weights_manifest. These models can also be found at https://github.com/justadudewhohacks/face-api.js-models. Ensure camera access is allowed at the start for best experience. Clear the cookies after role switch between the student/admin and the teacher and refresh.
+
+Student/admin account: 
+email: admin@gmail.com
+password: lifehack
+
+Teacher account:
+email: teaher@gmail.com
+password: lifehacking
     
     
 Demo Video can be found at: https://www.youtube.com/watch?v=7s5WBDwzroc
