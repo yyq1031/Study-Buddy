@@ -82,6 +82,8 @@ These can also be downloaded from:
 
 [Watch the Demo](https://www.youtube.com/watch?v=7s5WBDwzroc)
 
+---
+
 ### Troubleshooting
 If you encounter issues with `npm install`, try cleaning dependencies and reinstalling in all relevant directories:
 
