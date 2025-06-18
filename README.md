@@ -50,4 +50,4 @@ Create and place the firebaseAdmin.js file containing the following info in serv
     module.exports = { admin, db };
     
     
-Demo Video can be found on: https://www.youtube.com/watch?v=7s5WBDwzroc
+Demo Video can be found at: https://www.youtube.com/watch?v=7s5WBDwzroc
