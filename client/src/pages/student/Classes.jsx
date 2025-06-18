@@ -26,7 +26,7 @@ function Classes({ user }) {
         
         if (user && classData) {
           user.classes = classData;
-          localStorage.setItem('user', user);
+          localStorage.setItem('user', JSON.stringify(user));
           setClasses(classData)
         };
       } catch (err) {

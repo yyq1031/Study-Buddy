@@ -147,7 +147,7 @@ function Transcript() {
             type="text"
             value={audioUrl}
             onChange={(e) => setAudioUrl(e.target.value)}
-            placeholder="German1"
+            placeholder="Paste link here"
             style={{ width: '100%', padding: '10px', marginTop: '10px' }}
           />
         </label>

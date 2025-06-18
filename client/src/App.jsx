@@ -61,10 +61,10 @@ function App() {
         <Route path="/classes" element={<ClassesPage user={user} />} />
         <Route path="/class/:classId/lesson/:lessonId/video" element={<LessonPage />} />
         <Route path="/class/:classId/lesson/:lessonId/transcript" element={<Transcript />} />
-        <Route path="/signout" onSignIn={() => {
+        <Route path="/signout" onSignOut={() => {
           setUser(user);
           localStorage.removeItem('user');
-        }}
+        }} setUser={setUser} 
         element={<SignOut />} />
         <Route path="/:classId/:lessonId/video" element={<Quiz />} />
         <Route path="/:classId/:lessonId/text" element={<Quiz />} />
