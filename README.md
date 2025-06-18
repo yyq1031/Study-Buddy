@@ -48,6 +48,10 @@ Create and place the firebaseAdmin.js file containing the following info in serv
     const db = admin.firestore();
 
     module.exports = { admin, db };
+
+
+
+Ensure that after git clone there is a public folder in client that contains a subfolder called models. Models should contain face_expression_model-shard1, face_expression_model-weights_manifest, tiny_face_detector_model-shard1, and tiny_face_detector_model-weights_manifest. These models can also be found at https://github.com/justadudewhohacks/face-api.js-models.
     
     
 Demo Video can be found at: https://www.youtube.com/watch?v=7s5WBDwzroc
