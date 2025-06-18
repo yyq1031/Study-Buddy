@@ -27,9 +27,11 @@ You need to set up a .env file in the root directory.
 
     Replace the placeholder values with your actual credentials.
     For errors related to CORS, please set the port to a port that is not currently running any applications. This can be found under Networking in the browser.
+
     To generate API key for Assembly AI for audio transcription, visit https://www.assemblyai.com/dashboard/overview and login using google account to get the API key.
-    To generate API key for cohere, visit https://dashboard.cohere.com/api-keys to login to gmail account and select the options to a series of questions. After logging in,
-    under 'API Keys', get free trial API key. 
+
+    To generate API key for cohere, visit https://dashboard.cohere.com/api-keys to login to gmail account and select the options to a series of questions. After logging in, under 'API Keys', you can get the free trial API key. 
+
     After the dashboard is loaded, find the AI keys generation on the left navigation bar.
 
     🔐 Note: Do not commit your .env file to version control.
@@ -46,6 +48,5 @@ password: lifehack
 Teacher account:
 email: teaher@gmail.com
 password: lifehacking
-    
     
 Demo Video can be found at: https://www.youtube.com/watch?v=7s5WBDwzroc

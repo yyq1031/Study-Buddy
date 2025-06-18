@@ -7,6 +7,19 @@ const router = express.Router();
 const COHERE_API_KEY = process.env.COHERE_API_KEY;
 const COHERE_BASE_URL = "https://api.cohere.ai/v1";
 
+function generateFallbackAnalysis(questionsData) {
+  return {
+    tagConfidence: [
+      {
+        tag: "General",
+        confidence: 50,
+      },
+    ],
+    comments:
+      "We're having trouble analyzing your results right now. Please try again later or ask your instructor for help.",
+  };
+}
+
 async function classifyQuestionWithCohere(questionData) {
   try {
     const generatePrompt = `

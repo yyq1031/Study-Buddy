@@ -198,74 +198,74 @@ function Quiz() {
 */
 
   // New Dummy data to test AI confidence level
-  const allQuestionsDummy = [
-    {
-      question: "What does it mean for a sorting algorithm to be stable?",
-      options: [
-        "It preserves the relative order of equal elements",
-        "It always sorts in O(n log n) time",
-        "It does not use recursion",
-        "It works without extra space",
-      ],
-      answer: "It preserves the relative order of equal elements",
-      classId: "cs101",
-      lessonId: "sorting-and-trees",
-      tags: ["stability", "definitions", "sorting"],
-      difficulty: "Easy",
-    },
-    {
-      question: "Which of the following sorting algorithms is stable?",
-      options: ["Heap Sort", "Quick Sort", "Selection Sort", "Bubble Sort"],
-      answer: "Bubble Sort",
-      classId: "cs101",
-      lessonId: "sorting-and-trees",
-      tags: ["sorting", "stability", "algorithm-properties"],
-      difficulty: "Medium",
-    },
-    {
-      question: "What is the height of a complete binary tree with 15 nodes?",
-      options: ["3", "4", "5", "6"],
-      answer: "3",
-      classId: "cs101",
-      lessonId: "sorting-and-trees",
-      tags: ["trees", "binary-trees", "tree-height"],
-      difficulty: "Medium",
-    },
-    {
-      question:
-        "Which traversal method of a binary search tree results in sorted order?",
-      options: ["Pre-order", "Post-order", "In-order", "Level-order"],
-      answer: "In-order",
-      classId: "cs101",
-      lessonId: "sorting-and-trees",
-      tags: ["bst", "in-order", "tree-traversal"],
-      difficulty: "Easy",
-    },
-    {
-      question: "What is the worst-case time complexity of Heap Sort?",
-      options: ["O(n²)", "O(n log n)", "O(log n)", "O(n)"],
-      answer: "O(n log n)",
-      classId: "cs101",
-      lessonId: "sorting-and-trees",
-      tags: ["heap-sort", "time-complexity", "sorting"],
-      difficulty: "Medium",
-    },
-    {
-      question:
-        "What kind of binary tree has all leaf nodes at the same depth and every internal node with two children?",
-      options: [
-        "Complete Binary Tree",
-        "Full Binary Tree",
-        "Balanced Tree",
-        "Degenerate Tree",
-      ],
-      answer: "Full Binary Tree",
-      classId: "cs101",
-      lessonId: "sorting-and-trees",
-      tags: ["tree-structures", "definitions", "binary-trees"],
-      difficulty: "Medium",
-    },
-  ];
+  // const allQuestionsDummy = [
+  //   {
+  //     question: "What does it mean for a sorting algorithm to be stable?",
+  //     options: [
+  //       "It preserves the relative order of equal elements",
+  //       "It always sorts in O(n log n) time",
+  //       "It does not use recursion",
+  //       "It works without extra space",
+  //     ],
+  //     answer: "It preserves the relative order of equal elements",
+  //     classId: "cs101",
+  //     lessonId: "sorting-and-trees",
+  //     tags: ["stability", "definitions", "sorting"],
+  //     difficulty: "Easy",
+  //   },
+  //   {
+  //     question: "Which of the following sorting algorithms is stable?",
+  //     options: ["Heap Sort", "Quick Sort", "Selection Sort", "Bubble Sort"],
+  //     answer: "Bubble Sort",
+  //     classId: "cs101",
+  //     lessonId: "sorting-and-trees",
+  //     tags: ["sorting", "stability", "algorithm-properties"],
+  //     difficulty: "Medium",
+  //   },
+  //   {
+  //     question: "What is the height of a complete binary tree with 15 nodes?",
+  //     options: ["3", "4", "5", "6"],
+  //     answer: "3",
+  //     classId: "cs101",
+  //     lessonId: "sorting-and-trees",
+  //     tags: ["trees", "binary-trees", "tree-height"],
+  //     difficulty: "Medium",
+  //   },
+  //   {
+  //     question:
+  //       "Which traversal method of a binary search tree results in sorted order?",
+  //     options: ["Pre-order", "Post-order", "In-order", "Level-order"],
+  //     answer: "In-order",
+  //     classId: "cs101",
+  //     lessonId: "sorting-and-trees",
+  //     tags: ["bst", "in-order", "tree-traversal"],
+  //     difficulty: "Easy",
+  //   },
+  //   {
+  //     question: "What is the worst-case time complexity of Heap Sort?",
+  //     options: ["O(n²)", "O(n log n)", "O(log n)", "O(n)"],
+  //     answer: "O(n log n)",
+  //     classId: "cs101",
+  //     lessonId: "sorting-and-trees",
+  //     tags: ["heap-sort", "time-complexity", "sorting"],
+  //     difficulty: "Medium",
+  //   },
+  //   {
+  //     question:
+  //       "What kind of binary tree has all leaf nodes at the same depth and every internal node with two children?",
+  //     options: [
+  //       "Complete Binary Tree",
+  //       "Full Binary Tree",
+  //       "Balanced Tree",
+  //       "Degenerate Tree",
+  //     ],
+  //     answer: "Full Binary Tree",
+  //     classId: "cs101",
+  //     lessonId: "sorting-and-trees",
+  //     tags: ["tree-structures", "definitions", "binary-trees"],
+  //     difficulty: "Medium",
+  //   },
+  // ];
 
   const [difficulty, setDifficulty] = useState("easy");
   //const filteredQuestions = allQuestions.filter(q => q.classId === classId && q.lessonId === lessonId && q.difficulty === difficulty);

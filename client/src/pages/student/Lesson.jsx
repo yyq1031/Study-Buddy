@@ -19,7 +19,11 @@ function LessonPage() {
   useEffect(() => {
     let userData = null;
     if (localStorage.getItem("user") != null) {
-      userData = JSON.parse(localStorage.getItem("user"));
+      try {
+        userData = JSON.parse(localStorage.getItem("user"));
+      } catch (err) {
+        console.warn(err)
+      }
     }
     if (userData && userData?.classes) {
       const found = userData.classes.find(cls => cls.id === classId);
