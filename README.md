@@ -34,7 +34,7 @@ You need to set up a .env file in the root directory.
 
     After the dashboard is loaded, find the AI keys generation on the left navigation bar.
 
-    Download and get `firebase-server-account.json` from https://tinyurl.com/lifehackjson.
+    Download and get `firebase-server-account.json` from the google drive folder provided in the "Other Files" field.
 
     Move `firebase-server-account.json` to `server` directory.
 
