@@ -129,5 +129,5 @@ cd ..
 **⚠️ CORS Errors**  
 If you encounter CORS issues, check if the backend port (default `5001`) is in use. If it is, choose another port and update:
 - `.env`
-- `client/src/api.js`  
+- `client\.env`  
 accordingly.
