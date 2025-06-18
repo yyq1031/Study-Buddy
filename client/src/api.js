@@ -1,7 +1,8 @@
 import app from "./firebase";
 import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
-const base = 'http://localhost:5001/api';
+const PORT = import.meta.env.VITE_PORT || 5001
+const base = `http://localhost:${PORT}/api`;
 
 export const signUp = async (name, email, password) => {
   const auth = getAuth(app);

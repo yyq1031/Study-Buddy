@@ -92,7 +92,8 @@ function Transcript() {
     }
 
     try {
-      const response = await fetch("http://localhost:5001/api/transcript-url", {
+      const PORT = import.meta.env.VITE_PORT || 5001
+      const response = await fetch(`http://localhost:${PORT}/api/transcript-url`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ audioUrl })

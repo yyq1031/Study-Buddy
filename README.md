@@ -26,8 +26,8 @@ npm run dev
 ---
 
 ## Environment Variables
-You need to set up a `.env` file in the root directory:
-
+You need to set up a `.env` file in the root directory and in the client directory:
+Repeat this in both directories.
 1. Make a copy of the `.env.example` file.
 2. Rename the copy to `.env`.
 3. Replace the placeholder values with your actual credentials.

@@ -292,8 +292,9 @@ function Quiz() {
 
       setIsEvaluating(true);
       try {
+        const PORT = import.meta.env.VITE_PORT || 5001
         const response = await axios.post(
-          "http://localhost:5001/api/confidence",
+          `http://localhost:${PORT}/api/confidence`,
           {
             questionsData: formattedQuestionsData,
           }

@@ -48,7 +48,7 @@ function Classes({ user }) {
       <Grid container spacing={3}>
         {classes.map((cls) => (
           <Grid item xs={12} md={6} key={cls.id}>
-            <Card variant="outlined" sx={{ boxShadow: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Card variant="outlined" sx={{ boxShadow: 2, width:150, height: '100%', display: 'flex', flexDirection: 'column' }}>
               <CardContent sx={{ flexGrow: 1 }}>
                 <Typography variant="h6" gutterBottom>
                   <Link to={`/class/${cls.id}`} style={{ textDecoration: 'none', color: '#1976d2' }}>
