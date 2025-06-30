@@ -1,4 +1,4 @@
-# Lifehack
+# Study Buddy
 
 ## Prerequisites
 - Ensure **[Node.js](https://nodejs.org/)** (v16 or later recommended) and **npm** are installed.
